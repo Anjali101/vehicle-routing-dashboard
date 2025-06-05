@@ -1,6 +1,7 @@
 {
+  "_version": "1.65.0",
   "sap.app": {
-    "id": "vrptest",
+    "id": "project1",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -12,14 +13,14 @@
     "sourceTemplate": {
       "id": "@sap/generator-fiori:alp",
       "version": "1.17.6",
-      "toolsId": "8a823f0b-4687-4eca-93ee-ccc11d409c26"
+      "toolsId": "83524d8f-6834-4df4-b9b0-5853c8b6b139"
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/visualization/",      
+        "uri": "/odata/v4/visualization/",
         "type": "OData",
         "settings": {
-          "annotations": [],                    
+          "annotations": [],
           "odataVersion": "4.0"
         }
       }
@@ -59,7 +60,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "vrptest.i18n.i18n"
+          "bundleName": "project1.i18n.i18n"
         }
       },
       "": {
@@ -84,28 +85,28 @@
       "routes": [
         {
           "pattern": ":?query:",
-          "name": "RoutelocationsList",
-          "target": "RoutelocationsList"
+          "name": "RouteAggregatedList",
+          "target": "RouteAggregatedList"
         },
         {
-          "pattern": "Routelocations({key}):?query:",
-          "name": "RoutelocationsObjectPage",
-          "target": "RoutelocationsObjectPage"
+          "pattern": "RouteAggregated({key}):?query:",
+          "name": "RouteAggregatedObjectPage",
+          "target": "RouteAggregatedObjectPage"
         }
       ],
       "targets": {
-        "RoutelocationsList": {
+        "RouteAggregatedList": {
           "type": "Component",
-          "id": "RoutelocationsList",
-          "name": "sap.fe.templates.ListReport",  
+          "id": "RouteAggregatedList",
+          "name": "sap.fe.templates.ListReport",
           "options": {
             "settings": {
-              "contextPath": "/Routelocations",
+              "contextPath": "/RouteAggregated",
               "variantManagement": "Page",
               "navigation": {
-                "Routelocations": {
+                "RouteAggregated": {
                   "detail": {
-                    "route": "RoutelocationsObjectPage"
+                    "route": "RouteAggregatedObjectPage"
                   }
                 }
               },
@@ -113,7 +114,7 @@
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
                     "type": "AnalyticalTable",
-                    "selectionMode": "None"
+                    "selectionMode": "Auto"
                   }
                 }
               },
@@ -122,12 +123,12 @@
                   {
                     "primary": [
                       {
-                        "annotationPath": "com.sap.vocabularies.UI.v1.Chart"
+                        "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant"
                       }
                     ],
                     "secondary": [
                       {
-                        "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant"
+                        "annotationPath": "com.sap.vocabularies.UI.v1.LineItem"
                       }
                     ],
                     "defaultPath": "both"
@@ -137,14 +138,14 @@
             }
           }
         },
-        "RoutelocationsObjectPage": {
+        "RouteAggregatedObjectPage": {
           "type": "Component",
-          "id": "RoutelocationsObjectPage",
+          "id": "RouteAggregatedObjectPage",
           "name": "sap.fe.templates.ObjectPage",
           "options": {
             "settings": {
               "editableHeaderContent": false,
-              "contextPath": "/Routelocations"
+              "contextPath": "/RouteAggregated"
             }
           }
         }

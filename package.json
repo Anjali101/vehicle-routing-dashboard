@@ -16,12 +16,18 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "watch-vrp-test": "cds watch --open vrp-test/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-vrp-test": "cds watch --open vrp-test/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-project1": "cds watch --open project1/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-project2": "cds watch --open project2/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-project3": "cds watch --open project3/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
     "log-level": "warn"
   },
   "sapux": [
-    "app/vrp-test"
+    "app/vrp-test",
+    "app/project1",
+    "app/project2",
+    "app/project3"
   ]
 }
