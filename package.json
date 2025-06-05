@@ -1,5 +1,5 @@
 {
-  "name": "vehicle-routing-dashboard",
+  "name": "vrp-scenario",
   "version": "1.0.0",
   "description": "A simple CAP project.",
   "repository": "<Add your repository here>",
@@ -7,13 +7,21 @@
   "private": true,
   "dependencies": {
     "@sap/cds": "^8",
-    "express": "^4"
+    "express": "^4",
+    "node-gyp": "^11.2.0"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^1",
-    "@cap-js/cds-types": "^0.10.0"
+    "@cap-js/cds-types": "^0.10.0",
+    "@cap-js/sqlite": "^1"
   },
   "scripts": {
-    "start": "cds-serve"
-  }
+    "start": "cds-serve",
+    "watch-vrp-test": "cds watch --open vrp-test/webapp/index.html?sap-ui-xx-viewCache=false"
+  },
+  "cds": {
+    "log-level": "warn"
+  },
+  "sapux": [
+    "app/vrp-test"
+  ]
 }
