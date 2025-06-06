@@ -16,10 +16,10 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/visualization/",      
+        "uri": "/odata/v4/visualization/",
         "type": "OData",
         "settings": {
-          "annotations": [],                    
+          "annotations": [],
           "odataVersion": "4.0"
         }
       }
@@ -79,6 +79,19 @@
     "resources": {
       "css": []
     },
+
+    "viewExtensions": {
+      "sap.suite.ui.generic.template.ObjectPage.view.Details": {
+        "Sections": {
+          "com.sap.vocabularies.UI.v1.FieldGroup#GeoMap": {
+            "className": "sap.ui.core.mvc.XMLView",
+            "viewName": "vrptest.ext.view.CustomerDepotMapSection",
+            "type": "XML"
+          }
+        }
+      }
+    },
+
     "routing": {
       "config": {},
       "routes": [
@@ -97,7 +110,7 @@
         "RoutelocationsList": {
           "type": "Component",
           "id": "RoutelocationsList",
-          "name": "sap.fe.templates.AnalyticalListPage",  
+          "name": "sap.fe.templates.AnalyticalListPage",
           "options": {
             "settings": {
               "initialLoad": true,
@@ -123,7 +136,7 @@
                   {
                     "primary": [
                       {
-                        "annotationPath":  "com.sap.vocabularies.UI.v1.PresentationVariant"
+                        "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant"
                       }
                     ],
                     "secondary": [

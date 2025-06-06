@@ -1,0 +1,12 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  controllerName="vrptest.ext.controller.CustomerDepotMapSection">
+
+  <VBox id="mapSectionBox" class="sapUiSmallMargin">
+    <html:div id="map" style="height: 500px; width: 100%; border: 1px solid grey;"></html:div>
+  </VBox>
+
+</mvc:View>

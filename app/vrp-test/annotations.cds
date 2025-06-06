@@ -102,3 +102,32 @@ annotate service.Routelocations with
   annotate service.Routelocations with @UI.Identification: [
   { Value: Route, Label: 'Route' }
 ];
+annotate service.Routelocations with @UI.Facets: [
+
+  {
+    $Type: 'UI.CollectionFacet',
+    Label: 'Route Details',
+    Facets: [
+      {
+        $Type: 'UI.ReferenceFacet',
+        Label: 'General Info',
+        Target: '@UI.Identification'
+      }
+    ]
+  },
+
+  {
+    $Type: 'UI.ReferenceFacet',
+    Label: 'Customer & Depot Map',
+    Target: '@UI.FieldGroup#GeoMap'
+  }
+
+];
+
+annotate service.Routelocations with @UI.FieldGroup#GeoMap: {
+  Data: [
+    { Value: Route },
+    { Value: RouteCode },
+    { Value: RouteDate }
+  ]
+};

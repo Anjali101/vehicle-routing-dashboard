@@ -1,35 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Visualization Task 1 Test</title>
-    <style>
-        html, body, body > div, #container, #container-uiarea {
-            height: 100%;
-        }
-    </style>
-    <script
-        id="sap-ui-bootstrap"
-        src="https://sapui5.hana.ondemand.com/1.136.1/resources/sap-ui-core.js"
-        data-sap-ui-theme="sap_horizon"
-        data-sap-ui-resourceroots='{
-            "vrptest": "./"
-        }'
-        data-sap-ui-oninit="module:sap/ui/core/ComponentSupport"
-        data-sap-ui-compatVersion="edge"
-        data-sap-ui-async="true"
-        data-sap-ui-frameOptions="trusted"
-    ></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Visualization Task 1 Test</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+z0pJ8e3pBMZ8uYcKJ3RWqr98O2bXprztBOZ8JvT4="
+    crossorigin=""
+  />
+
+  <style>
+    html, body, body > div, #container, #container-uiarea {
+      height: 100%;
+    }
+    /* Optional: style for map div if needed */
+    #map {
+      height: 500px;
+      width: 100%;
+    }
+  </style>
+
+  <!-- SAPUI5 Bootstrapping -->
+  <script
+    id="sap-ui-bootstrap"
+    src="https://sapui5.hana.ondemand.com/1.136.1/resources/sap-ui-core.js"
+    data-sap-ui-theme="sap_horizon"
+    data-sap-ui-resourceroots='{
+      "vrptest": "./"
+    }'
+    data-sap-ui-oninit="module:sap/ui/core/ComponentSupport"
+    data-sap-ui-compatVersion="edge"
+    data-sap-ui-async="true"
+    data-sap-ui-frameOptions="trusted"
+  ></script>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-Dxj1yWmAhHkVEwCyX4e7XvHf9eAf9u76heLmLbte4OI="
+    crossorigin="">
+  </script>
 </head>
+
 <body class="sapUiBody sapUiSizeCompact" id="content">
-    <div
-        data-sap-ui-component
-        data-name="vrptest"
-        data-id="container"
-        data-settings='{"id" : "vrptest"}'
-        data-handle-validation="true"
-    ></div>
+  <div
+    data-sap-ui-component
+    data-name="vrptest"
+    data-id="container"
+    data-settings='{"id" : "vrptest"}'
+    data-handle-validation="true"
+  ></div>
 </body>
 </html>
