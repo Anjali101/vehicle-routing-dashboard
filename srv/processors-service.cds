@@ -23,22 +23,19 @@ service Visualization {
 
         @UI.Hidden: false
         key Customer.route_id as Route,
-        @UI.Hidden: false
-        sum(Customer.number_of_articles) as SumArticles: Decimal,
-        sum(Customer.total_weight_kg) as SumWeight: Decimal,
-        sum(Customer.total_volume_m3) as SumVolume: Decimal,
         
-        @UI.Hidden: false
-        max(Way.route_code) as RouteCode,
-        @UI.Hidden: false
-        max(Way.route_date) as RouteDate,
-        @UI.Hidden: false
-        Way.algorithm_number_of_iterations as Iterations,
-        @UI.Hidden: false
-        Way.result_total_cost_km as TotalDistance
+        round(sum(Customer.number_of_articles), 3) as SumArticles: Decimal,
+        round(sum(Customer.total_weight_kg), 3)    as SumWeight: Decimal,
+        round(sum(Customer.total_volume_m3), 3)    as SumVolume: Decimal,
+        round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) as AverageServiceTime: Decimal,
+        Way.route_date as RouteDate: DateTime,
+        Way.route_code as RouteCode: String
 
         
-    }group by Customer.route_id, ;
+        
+
+    
+    }group by Customer.route_id;
 
     entity Routes as select from my.Routes {
         key RouteID,

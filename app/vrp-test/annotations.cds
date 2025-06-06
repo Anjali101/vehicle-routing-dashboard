@@ -6,14 +6,17 @@ annotate service.Routelocations with @UI.SelectionFields  : [ Route];
 
 annotate service.Routelocations with @Aggregation.ApplySupported  : {
     Transformations : ['aggregate', 'groupby'],
-    GroupableProperties : [Route ],
+    GroupableProperties : [Route],
     AggregatableProperties: [
        
         {Property: SumArticles},
         {Property: SumWeight},
         {Property: SumVolume},
+        {Property: AverageServiceTime},
         {Property: RouteDate},
         {Property: RouteCode},
+      
+       
         
         
        
@@ -29,7 +32,7 @@ annotate service.Routelocations with @(
         Title : '{i18n>Route Instances Overview}',
         ChartType : #Column,
         Dimensions : [Route],
-        Measures: [SumArticles, SumWeight, SumVolume,RouteDate],
+        Measures: [SumArticles, SumWeight, SumVolume],
         MeasureAttributes: [{Measure: SumVolume, Role: #Axis2},
                             {Measure: SumArticles, Role: #Axis1},
                             {Measure: SumWeight, Role: #Axis1},
@@ -56,9 +59,23 @@ annotate service.Routelocations with @(
         Name : 'TotalVolume',
         AggregatableProperty : SumVolume,
         AggregationMethod : 'sum',
-        ![@Common.Label] : 'Total Package Volume per Route (m^3)',}
+        ![@Common.Label] : 'Total Package Volume per Route (m^3)',},
+      
+
+
+
+        
 
 );
+annotate service.Routelocations with {
+  Route              @Common.Label: 'Route';
+  SumArticles        @Common.Label: 'Number of Articles';
+  SumWeight          @Common.Label: 'Total Weight (kg)';
+  SumVolume          @Common.Label: 'Total Volume (m³)';
+  AverageServiceTime @Common.Label: 'Average Service Time (min)';
+  RouteDate          @Common.Label: 'Route Date';
+  RouteCode          @Common.Label: 'Route Code';
+};
 
 
 annotate service.Routelocations with 
@@ -66,13 +83,22 @@ annotate service.Routelocations with
     { Value: Route, @UI.Importance: #High },
     { Value: RouteCode, @UI.Importance: #High },
     { Value: RouteDate, @UI.Importance: #High },
+    { Value: AverageServiceTime, @UI.Importance: #High },
+    { Value: RouteDate, @UI.Importance: #High },
+    { Value: SumArticles, @UI.Importance: #High },
+    { Value: SumWeight, @UI.Importance: #High },
+    { Value: SumVolume, @UI.Importance: #High },
    
   ];
 
   annotate service.Routelocations with
   @UI.PresentationVariant: {
-    GroupBy: [ Route ],        // default grouping in table
-    Total: [ SumArticles,SumVolume,SumWeight, RouteDate ],  // aggregated measures
-    Visualizations: [ '@UI.Chart', '@UI.LineItem'],
-    RequestAtLeast: [SumArticles,SumVolume,SumWeight]
+    GroupBy: [ ],        // default grouping in table
+    Total: [ SumArticles,SumVolume,SumWeight,AverageServiceTime ],  // aggregated measures
+    Visualizations: [ '@UI.Chart','@UI.LineItem'],
+    RequestAtLeast: [SumArticles,SumVolume,SumWeight,]
   };
+
+  annotate service.Routelocations with @UI.Identification: [
+  { Value: Route, Label: 'Route' }
+];
