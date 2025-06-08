@@ -2,11 +2,43 @@
   xmlns:mvc="sap.ui.core.mvc"
   xmlns="sap.m"
   xmlns:core="sap.ui.core"
-  xmlns:html="http://www.w3.org/1999/xhtml"
   controllerName="vrptest.ext.controller.CustomerDepotMapSection">
 
-  <VBox id="mapSectionBox" class="sapUiSmallMargin">
-    <html:div id="map" style="height: 500px; width: 100%; border: 1px solid grey;"></html:div>
-  </VBox>
+  <VBox id="geoSection" class="sapUiSmallMargin">
 
+    <Text id="title1" text="1. Customer & Depot Map" />
+
+    <core:HTML
+      id="mapContainer"
+      content="&lt;div id='map' style='height:300px;width:100%;margin-bottom:2rem;'&gt;&lt;/div&gt;" />
+
+    <Text id="title2" text="2. Customer Locations for Selected Route" class="sapUiMediumMarginTop" />
+
+    <Table id="customerTable" items="{path: 'to_Customers'}">
+      <columns>
+        <Column id="colCode">
+          <Text id="labelCode" text="Customer Code" />
+        </Column>
+        <Column id="colLat">
+          <Text id="labelLat" text="Latitude" />
+        </Column>
+        <Column id="colLon">
+          <Text id="labelLon" text="Longitude" />
+        </Column>
+      </columns>
+      <items>
+        <ColumnListItem id="rowTemplate">
+          <cells>
+            <Text id="valCode" text="{customer_code}" />
+            <Text id="valLat" text="{customer_latitude}" />
+            <Text id="valLon" text="{customer_longitude}" />
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+
+    <Text id="title3" text="3. Vehicle Capacity Distribution (reserved)" class="sapUiMediumMarginTop" />
+    <Text id="title4" text="4. Blocked Road Segments (reserved)" class="sapUiMediumMarginTop" />
+
+  </VBox>
 </mvc:View>

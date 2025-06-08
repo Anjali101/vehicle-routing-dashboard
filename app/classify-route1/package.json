@@ -1,7 +1,7 @@
 {
-  "name": "vrp-test",
+  "name": "classify-route1",
   "version": "0.0.1",
-  "description": "Test for Task 1, first analytical page",
+  "description": "An SAP Fiori application.",
   "keywords": [
     "ui5",
     "openui5",

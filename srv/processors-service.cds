@@ -1,54 +1,98 @@
 using { sap.capire.vrp as my } from '../db/schema';
 
+@readonly
+entity CustomerSummary as select from my.Customer {
+  route_id,
+  count(distinct customer_code) as CustomerCount: Integer,
+  avg(customer_time_window_to_min - customer_time_window_from_min) as AvgTimeWindowLength: Decimal
+}
+group by route_id;
+
+@readonly
+entity ConstraintSummary as select from my.Constraints {
+  route_id,
+  count(ID) as ConstraintCount: Integer
+}
+group by route_id;
+
+@readonly
+entity RouteTimeWindowConstraintSummary as select from my.Route as R
+left join CustomerSummary as CS on CS.route_id = R.route_id
+left join ConstraintSummary as CT on CT.route_id = R.route_id {
+  key R.route_id as RouteID,
+  CS.CustomerCount,
+  CS.AvgTimeWindowLength,
+  CT.ConstraintCount
+};
+
+@readonly
+entity RouteComplexityClassified as select from RouteTimeWindowConstraintSummary {
+  key RouteID,
+  CustomerCount,
+  AvgTimeWindowLength,
+  ConstraintCount,
+
+  case
+    when AvgTimeWindowLength < 445 then 'Tight'
+    when AvgTimeWindowLength < 452 then 'Moderate'
+    else 'Loose'
+  end as TimeWindowComplexity: String,
+
+  case
+    when ConstraintCount < 25 then 'Low'
+    when ConstraintCount < 50 then 'Medium'
+    else 'High'
+  end as ConstraintLevel: String
+};
+
 service Visualization {
 
-    @readonly
-    entity Routelocations as select from my.Customer as Customer 
-    left join my.Depots as Depot on Customer.route_id = Depot.route_id
-    left join my.Route as Way on Customer.route_id = Way.route_id {
+  @readonly
+  entity Routelocations as select from my.Customer as Customer 
+  left join my.Depots as Depot on Customer.route_id = Depot.route_id
+  left join my.Route as Way on Customer.route_id = Way.route_id {
 
-       
-        @Common.ValueList: {
-            CollectionPath: 'Routes',
-            Parameters: [
-                {
-                    $Type: 'Common.ValueListParameterInOut',
-                    LocalDataProperty: 'Route',
-                    ValueListProperty: 'RouteID'
-                }
-            ]
+    @Common.ValueList: {
+      CollectionPath: 'Routes',
+      Parameters: [
+        {
+          $Type: 'Common.ValueListParameterInOut',
+          LocalDataProperty: 'Route',
+          ValueListProperty: 'RouteID'
         }
+      ]
+    }
 
+    @UI.Hidden: false
+    key Customer.route_id as Route,
 
+    round(sum(Customer.number_of_articles), 3) as SumArticles: Decimal,
+    round(sum(Customer.total_weight_kg), 3)    as SumWeight: Decimal,
+    round(sum(Customer.total_volume_m3), 3)    as SumVolume: Decimal,
+    round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) as AverageServiceTime: Decimal,
+    Way.route_date as RouteDate: DateTime,
+    Way.route_code as RouteCode: String
 
-        @UI.Hidden: false
-        key Customer.route_id as Route,
-        
-        round(sum(Customer.number_of_articles), 3) as SumArticles: Decimal,
-        round(sum(Customer.total_weight_kg), 3)    as SumWeight: Decimal,
-        round(sum(Customer.total_volume_m3), 3)    as SumVolume: Decimal,
-        round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) as AverageServiceTime: Decimal,
-        Way.route_date as RouteDate: DateTime,
-        Way.route_code as RouteCode: String
+  } group by Customer.route_id;
 
-        
-        
+  entity Routes as select from my.Routes {
+    key RouteID
+  };
 
-    
-    }group by Customer.route_id;
+  entity Customers as projection on my.Customer;
+  entity BlockedRoads as projection on my.BlockedRoad;
 
-    entity Routes as select from my.Routes {
-        key RouteID,
-        
-        
-        };
+  entity Route as projection on my.Route {
+    ID,
+    route_id,
+    route_code,
+    route_date,
+    algorithm_number_of_iterations,
+    result_total_cost_km,
+    to_Customers,
+    to_BlockedRoads: association to many BlockedRoads on to_BlockedRoads.route_id = route_id
+  };
 
-
-
-    } 
-     
-
-
-
-
-
+  entity RouteTimeWindowSummary as projection on RouteTimeWindowConstraintSummary;
+  entity RouteClassification as projection on RouteComplexityClassified;
+}
