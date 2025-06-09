@@ -89,6 +89,7 @@ entity CustomerDistance: cuid {
 }
 
 entity BlockedRoad: cuid {
+    key ID: UUID;
     blocked_part_of_the_road_lat: Decimal;
     blocked_part_of_the_road_lon: Decimal;
 }
@@ -98,3 +99,8 @@ entity Routes as select from Route {
     route_code as RouteCode
 }
 
+type ClassificationLevel : String enum {
+    Low;
+    Medium;
+    High;
+}

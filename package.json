@@ -19,7 +19,10 @@
     "watch-vrp-test": "cds watch --open vrp-test/webapp/index.html?sap-ui-xx-viewCache=false",
     "watch-project1": "cds watch --open project1/webapp/index.html?sap-ui-xx-viewCache=false",
     "watch-project2": "cds watch --open project2/webapp/index.html?sap-ui-xx-viewCache=false",
-    "watch-project3": "cds watch --open project3/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-project3": "cds watch --open project3/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-classification": "cds watch --open classification/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-classificatiolist": "cds watch --open classificatiolist/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-routeclassification": "cds watch --open routeclassification/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
     "log-level": "warn"
@@ -28,6 +31,10 @@
     "app/vrp-test",
     "app/project1",
     "app/project2",
-    "app/project3"
+    "app/project3",
+    "app/classification",
+    "app/classificatiolist",
+    "app/routeclassification",
+    "app/classification"
   ]
 }

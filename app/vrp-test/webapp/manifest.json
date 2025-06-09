@@ -16,11 +16,25 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/visualization/",      
+        "uri": "/odata/v4/visualization/",
         "type": "OData",
         "settings": {
-          "annotations": [],                    
+          "annotations": [],
           "odataVersion": "4.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "VehicleStats-display": {
+          "semanticObject": "VehicleStats",
+          "action": "display",
+          "title": "Vehicle Chart",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+
         }
       }
     }
@@ -39,7 +53,33 @@
       "desktop": true,
       "tablet": true,
       "phone": true
+    },
+    "extends": {
+  "extensions": {
+    "sap.ui.viewExtensions": {
+      "sap.fe.templates.AnalyticalListPage.view.AnalyticalListPage": {
+        "AfterToolbar": {
+          "className": "sap.ui.core.Fragment",
+          "fragmentName": "vrptest.ext.fragments.VehicleStatsButton",
+          "type": "XML"
+        }
+      }
     }
+  },
+  "extends": {
+  "extensions": {
+    "sap.ui.viewExtensions": {
+      "sap.fe.templates.AnalyticalListPage.AnalyticalListPage": {
+        "AfterFacetHeaderActions": {
+          "className": "sap.ui.core.Fragment",
+          "fragmentName": "vrptest.ext.fragment.VehicleStatsButton",
+          "type": "XML"
+        }
+      }
+    }
+  }
+}
+}
   },
   "sap.ui5": {
     "flexEnabled": true,
@@ -91,13 +131,36 @@
           "pattern": "Routelocations({key}):?query:",
           "name": "RoutelocationsObjectPage",
           "target": "RoutelocationsObjectPage"
+        },
+        {
+          "pattern": "VehicleStats",
+          "name": "VehicleStats",
+          "target": "VehicleStats"
         }
       ],
       "targets": {
         "RoutelocationsList": {
+          "content": {
+  "body": {
+    "sections": {
+      "section_0": {
+        "template": "sap.fe.macros.ChartTable",
+        "actions": {
+          "navigateToVehicleStats": {
+            "id": "vehicleStatsChartButton",
+            "text": "Vehicle Chart",
+            "icon": "sap-icon://line-chart",
+            "press": "my.namespace.ext.controller.CustomActions.navigateToVehicleStats"
+          }
+        }
+      }
+    }
+  }
+},
           "type": "Component",
           "id": "RoutelocationsList",
-          "name": "sap.fe.templates.AnalyticalListPage",  
+          "controllerName": "vrptest.ext.controller.AnalyticalListPageExt",
+          "name": "sap.fe.templates.AnalyticalListPage",
           "options": {
             "settings": {
               "initialLoad": true,
@@ -123,7 +186,7 @@
                   {
                     "primary": [
                       {
-                        "annotationPath":  "com.sap.vocabularies.UI.v1.PresentationVariant"
+                        "annotationPath": "com.sap.vocabularies.UI.v1.Chart"
                       }
                     ],
                     "secondary": [
@@ -137,6 +200,7 @@
               }
             }
           }
+          
         },
         "RoutelocationsObjectPage": {
           "type": "Component",
@@ -144,13 +208,66 @@
           "name": "sap.fe.templates.ObjectPage",
           "options": {
             "settings": {
-              "editableHeaderContent": false,
+              "editableHeaderContent": true,
               "contextPath": "/Routelocations"
+            }
+          }
+        },
+        "VehicleStats": {
+  "type": "Component",
+  "id": "VehicleStats",
+  "name": "sap.fe.templates.ListReport",
+  "options": {
+    "settings": {
+      "entitySet": "VehicleDistribution",
+      "variantManagement": "None"
+    }
+  }
+}
+      }
+    },
+    "VehicleStats": {
+  "_version": "1.1.0",
+  "id": "VehicleStats",
+  "usage": "VehicleStats",
+  "type": "Component",
+  "name": "sap.fe.templates.ListReport",
+  "options": {
+    "settings": {
+      "entitySet": "VehicleDistribution",
+      "variantManagement": "None",
+      "controlConfiguration": {
+        "@com.sap.vocabularies.UI.v1.LineItem": {
+          "tableSettings": {
+            "type": "ResponsiveTable"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui.generic.app": {
+  "pages": {
+    "RouteObjectPage": {
+      "component": {
+        "settings": {
+          "content": {
+            "body": {
+              "sections": {
+                "CustomersTab": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "fitContainer": true
+                  }
+                }
+              }
             }
           }
         }
       }
     }
+  }
+}
+}
   },
   "sap.fiori": {
     "registrationIds": [],
