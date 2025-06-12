@@ -1,0 +1,162 @@
+_schema-version: 3.3.0
+ID: vrp-scenario
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+        - rm -rf vehicle-routing-dashboard-ui-deployer/resources
+        - npm install --production
+        - npx -p @sap/cds-dk cds build --production
+        - mkdir gen/ui-resources
+modules:
+  - name: vrp-scenario-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      memory: 256M
+      instances: 1
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: vrp-scenario-db
+      - name: vrp-scenario-auth
+
+  - name: vrp-scenario-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: vrp-scenario-db
+
+  - name: vehicle-routing-dashboard-ui-resources
+    type: com.sap.application.content
+    path: gen/ui-resources
+    requires:
+    - name: vehicle-routing-dashboard-html5-repo-host
+      parameters:
+        content-target: true
+    build-parameters:
+      requires:
+      - name: classification
+        artifacts:
+          - classification.zip
+        target-path: .
+      - name: vrp-test
+        artifacts:
+          - vrp-test.zip
+        target-path: .
+
+
+
+  - name: classification
+    type: html5
+    path: app/classification
+    build-parameters:
+      builder: custom
+      commands:
+        - npm install
+        - npx -p @ui5/cli ui5 build --dest ../../gen/app/classification/dist --include-task=generateManifestBundle --include-task=generateCachebusterInfo
+        - bash -c "cd ../../gen/app/classification/dist && npx bestzip ../classification.zip *"
+      supported-platforms: []
+      build-result: ../../gen/app/classification
+
+  - name: vrp-test
+    type: html5
+    path: app/vrp-test
+    build-parameters:
+      builder: custom
+      commands:
+        - npm install
+        - npx -p @ui5/cli ui5 build --dest ../../gen/app/vrp-test/dist --include-task=generateManifestBundle --include-task=generateCachebusterInfo
+        - bash -c "cd ../../gen/app/vrp-test/dist && npx bestzip ../vrp-test.zip *"
+      supported-platforms: []
+      build-result: ../../gen/app/vrp-test
+  
+  
+  - name: vehicle-routing-dashboard-portal-content-deployer
+    type: com.sap.application.content
+    path: packages/deploy-int/portal-content
+    requires:
+      - name: vehicle-routing-dashboard-portal
+        parameters:
+          content-target: true
+          service-key:
+            name: incident-management-portal-deploy-key
+            config:
+              content-endpoint: developer
+      - name: vehicle-routing-dashboard-auth
+      - name: vehicle-routing-dashboard-html5-repo-host
+      - name: vehicle-routing-dashboard-ui-resources
+
+  - name: vehicle-routing-dashboard-approuter
+    type: nodejs
+    path: packages/deploy-int/approuter
+    parameters:
+      memory: 128M
+    requires:
+      - name: vehicle-routing-dashboard-auth
+      - name: vehicle-routing-dashboard-portal
+      - name: vehicle-routing-dashboard-html5-repo-runtime
+      - name: srv-api
+        group: destinations
+        properties:
+          forwardAuthToken: true
+          strictSSL: true
+          name: srv-api
+          url: '~{srv-url}'
+
+resources:
+  - name: vrp-scenario-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: vrp-scenario-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: vrp-scenario-${org}-${space}
+        tenant-mode: dedicated
+
+  - name: vehicle-routing-dashboard-portal
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: portal
+      service-plan: standard
+
+  - name: vehicle-routing-dashboard-html5-repo-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
+
+  - name: vehicle-routing-dashboard-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+
+  - name: vehicle-routing-dashboard-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: incidents-mgmt-${org}-${space}
+        tenant-mode: dedicated

@@ -26,6 +26,15 @@
     },
     "crossNavigation": {
       "inbounds": {
+        "display": {
+        "semanticObject": "vrptest",
+        "action": "display",
+        "title": "VRP Route visualization",
+        "signature": {
+          "parameters": {},
+          "additionalParameters": "allowed"
+        }
+      },
         "VehicleStats-display": {
           "semanticObject": "VehicleStats",
           "action": "display",
@@ -120,7 +129,7 @@
       "css": []
     },
     "routing": {
-      "config": {},
+      "config": {"async": true},
       "routes": [
         {
           "pattern": ":?query:",
@@ -273,4 +282,5 @@
     "registrationIds": [],
     "archeType": "analytical"
   }
+  
 }

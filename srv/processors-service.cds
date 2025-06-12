@@ -1,4 +1,4 @@
-using { sap.capire.vrp as my, sap.capire.vrp.ClassificationLevel } from '../db/schema';
+using { sap.capire.vrp as my } from '../db/schema';
 
 service Visualization {
 
@@ -111,7 +111,7 @@ service RouteClassification{
 
 
 
-entity CustomerArticleSummary as select from my.Customer {
+entity CustomerArticleSummary as select from my.Customer  {
 
 
        @Common.ValueList : {
@@ -128,18 +128,30 @@ entity CustomerArticleSummary as select from my.Customer {
         ]
     }
 
-    
+  
 
     @UI.Hidden: false
     
     key Customer.route_id as Route ,
     sum(number_of_articles) as TotalArticles: Integer,
 
+
+    count(distinct customer_code) as Customers: Integer,
+
+    case 
+        when count(distinct customer_code) <= 100 then 'Low'
+        when count(distinct customer_code) <= 110 then 'Medium'
+        else 'High'
+    end as CustomerLoad: String,
+
+
   case
     when sum(number_of_articles) >2000 then 3
     when sum(number_of_articles) <1750 then 1
     else 2
   end as TotalArticleCriticality: Integer,
+  round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) as AverageCustomerAvailability: Decimal,
+  cast (487.56 as Decimal (5,2)) as AvgCust_ReferenceValue,
 
 case
   when round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) >= 454 then 5
@@ -148,12 +160,106 @@ case
   when round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) >= 436 then 2
   else 1
 end as AverageServiceStars: Integer,
-  
+
+    count(distinct customer_code) as CustomerNumber: Integer,
+    cast(105.27 as Decimal(5,2)) as ReferenceValue,  // <-- Add this field
+
+    case 
+
+        when count(distinct customer_code)  <= 110 then 3
+        when count(distinct customer_code)  <= 120 then 2
+        else  1
+
+        end as CustomerKPI: Integer,
+
+
+    case
+
+        when count (distinct customer_code) <= 110 then 'Low'
+        when count (distinct customer_code) <= 120 then 'Medium'
+        else 'High'
+        end as CustomerKPI_Label: String,
+
+
+       
+
+    constraintlevel: association to many constraintcount on  constraintlevel.ConstraintRoute = Route,
+    routecost: association to one vehiclecost on routecost.Route = Route,
+
+     cast(169.82 as Decimal(5,2)) as ReferenceValueVehicleCost,
+     cast(40.18 as Decimal(5,2)) as ReferenceValueConstraintLevel,
 
 
 } group by Customer.route_id ;
 
 
-      
+entity constraintcount as select from my.Constraints {
+
+    key Constraints.ID as ID,
+    Constraints.route_id as ConstraintRoute,
+
+        count(distinct Constraints.ID) as ConstraintSum: Integer,
+
+    case
+
+        when count (distinct Constraints.ID ) <= 20 then 'Low'
+        when count (distinct Constraints.ID ) <= 40 then 'Medium'
+        else 'High'
+        end as ConstraintLevel: String,
+
+         case
+
+        when count (distinct Constraints.ID ) <= 20 then 1
+        when count (distinct Constraints.ID ) <= 40 then 2
+        else 3
+        end as ConstraintLevelSort: Integer
+    
+
+
+
+} group by route_id;
+
+
+entity vehiclecost as select from my.Customer left join my.Vehicle on 
+Customer.route_id = Vehicle.route_id {
+
+
+           @Common.ValueList : {
+        $Type : 'Common.ValueListType',
+        Label : 'constraintlevel',
+        CollectionPath : 'vehiclecost',
+        Parameters : [
+            {
+                $Type : 'Common.ValueListParameterInOut',
+                LocalDataProperty : VehicleCostEfficiency,
+                ValueListProperty : 'VehicleCostEfficiency'
+            },
+           
+        ]
+    }
+
+
+
+
+    Vehicle.route_id as Route,
+    key Vehicle.ID as ID,
+    sum ( distinct result_vehicle_final_cost_km)  as VehicleCostEfficiency: Decimal(10,4),
+
+    case
+        when round( (sum ( distinct result_vehicle_final_cost_km)), 3) <= 143.8 then 1
+        when round( (sum ( distinct result_vehicle_final_cost_km)), 3) <= 171.6 then 2
+        when round( (sum ( distinct result_vehicle_final_cost_km)), 3) <= 199.4 then 3
+        when round( (sum ( distinct result_vehicle_final_cost_km)), 3) >= 227.2 then 4
+        else 5
+        end as VehicleCostStars: Integer,
+
+
+} group by Vehicle.route_id;
+
+
+
+
+
+
 
 }

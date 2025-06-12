@@ -6,13 +6,16 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@cap-js/hana": "^1",
     "@sap/cds": "^8",
+    "@sap/xssec": "^4",
     "express": "^4",
     "node-gyp": "^11.2.0"
   },
   "devDependencies": {
     "@cap-js/cds-types": "^0.10.0",
-    "@cap-js/sqlite": "^1"
+    "@cap-js/sqlite": "^1",
+    "@sap/cds-dk": "^8"
   },
   "scripts": {
     "start": "cds-serve",
@@ -25,7 +28,16 @@
     "watch-routeclassification": "cds watch --open routeclassification/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
-    "log-level": "warn"
+    "log-level": "warn",
+    "requires": {
+      "[production]": {
+        "auth": "xsuaa",
+        "db": "hana"
+      }
+    },
+    "sql": {
+      "native_hana_associations": false
+    }
   },
   "sapux": [
     "app/vrp-test",

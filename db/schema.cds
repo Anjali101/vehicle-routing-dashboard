@@ -104,3 +104,8 @@ type ClassificationLevel : String enum {
     Medium;
     High;
 }
+
+entity CustomerLoadValues {
+    key Value: String;
+    Label: String;
+}
