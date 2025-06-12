@@ -99,6 +99,17 @@
           "type": "Component",
           "id": "RouteClassificationList",
           "name": "sap.fe.templates.ListReport",
+          "component": {
+            "name": "sap.fe.templates.ListReport",
+            "extensions": {
+              "LineItem": {
+                "TimeWindowComplexity": {
+                  "fragmentName": "fragments.TimeWindowCell",
+                  "type": "XML"
+                }
+              }
+            }
+          },
           "options": {
             "settings": {
               "contextPath": "/RouteClassification",
@@ -113,7 +124,27 @@
               "controlConfiguration": {
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
-                    "type": "ResponsiveTable"
+                    "type": "ResponsiveTable",
+                    "columnSettings": {
+                      "RouteID": {
+                        "width": "7rem"
+                      },
+                      "CustomerCount": {
+                        "width": "6rem"
+                      },
+                      "ConstraintCount": {
+                        "width": "8rem"
+                      },
+                      "ConstraintLevel": {
+                        "width": "6rem"
+                      },
+                      "AvgTimeWindowLength": {
+                        "width": "9rem"
+                      },
+                      "TimeWindowComplexity": {
+                        "width": "8rem"
+                      }
+                    }
                   }
                 }
               }
@@ -138,4 +169,7 @@
     "registrationIds": [],
     "archeType": "transactional"
   }
-}
+ }
+ 
+ 
+ 

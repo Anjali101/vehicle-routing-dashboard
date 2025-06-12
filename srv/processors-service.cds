@@ -32,17 +32,47 @@ entity RouteComplexityClassified as select from RouteTimeWindowConstraintSummary
   AvgTimeWindowLength,
   ConstraintCount,
 
+  // Time Window Classification
   case
     when AvgTimeWindowLength < 445 then 'Tight'
     when AvgTimeWindowLength < 452 then 'Moderate'
     else 'Loose'
   end as TimeWindowComplexity: String,
 
+  // Constraint Load Classification
   case
     when ConstraintCount < 25 then 'Low'
     when ConstraintCount < 50 then 'Medium'
     else 'High'
-  end as ConstraintLevel: String
+  end as ConstraintLevel: String,
+
+  // Customer Volume Classification
+  case
+    when CustomerCount < 100 then 'Low'
+    when CustomerCount < 115 then 'Medium'
+    else 'High'
+  end as CustomerLevel: String,
+
+  // Time Window Criticality Coloring
+  case
+    when AvgTimeWindowLength < 445 then 1  // Green
+    when AvgTimeWindowLength < 452 then 2  // Orange
+    else 3                                 // Red
+  end as TimeWindowCriticality: Integer,
+
+  // Constraint Criticality Coloring
+  case
+    when ConstraintCount < 25 then 3       // Green
+    when ConstraintCount < 50 then 2       // Orange
+    else 1                                 // Red
+  end as ConstraintCriticality: Integer,
+
+  // Customer Count Criticality Coloring
+  case
+    when CustomerCount < 100 then 3         // Green
+    when CustomerCount < 115 then 2         // Orange
+    else 1                                 // Red
+  end as CustomerCriticality: Integer
 };
 
 service Visualization {
@@ -96,3 +126,4 @@ service Visualization {
   entity RouteTimeWindowSummary as projection on RouteTimeWindowConstraintSummary;
   entity RouteClassification as projection on RouteComplexityClassified;
 }
+
