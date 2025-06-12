@@ -1,0 +1,172 @@
+{
+  "sap.app": {
+    "id": "vrptest",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:alp",
+      "version": "1.17.6",
+      "toolsId": "8a823f0b-4687-4eca-93ee-ccc11d409c26"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/visualization/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.136.1",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "vrptest.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "@i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "uri": "i18n/i18n.properties"
+      }
+    },
+    "resources": {
+      "css": []
+    },
+
+    "viewExtensions": {
+      "sap.suite.ui.generic.template.ObjectPage.view.Details": {
+        "Sections": {
+          "com.sap.vocabularies.UI.v1.FieldGroup#GeoMap": {
+            "className": "sap.ui.core.mvc.XMLView",
+            "viewName": "vrptest.ext.view.CustomerDepotMapSection",
+            "type": "XML"
+          }
+        }
+      }
+    },
+
+    "routing": {
+      "config": {},
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "RoutelocationsList",
+          "target": "RoutelocationsList"
+        },
+        {
+          "pattern": "Routelocations({key}):?query:",
+          "name": "RoutelocationsObjectPage",
+          "target": "RoutelocationsObjectPage"
+        }
+      ],
+      "targets": {
+        "RoutelocationsList": {
+          "type": "Component",
+          "id": "RoutelocationsList",
+          "name": "sap.fe.templates.AnalyticalListPage",
+          "options": {
+            "settings": {
+              "initialLoad": true,
+              "contextPath": "/Routelocations",
+              "variantManagement": "Page",
+              "navigation": {
+                "Routelocations": {
+                  "detail": {
+                    "route": "RoutelocationsObjectPage"
+                  }
+                }
+              },
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "selectionMode": "None"
+                  }
+                }
+              },
+              "views": {
+                "paths": [
+                  {
+                    "primary": [
+                      {
+                        "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant"
+                      }
+                    ],
+                    "secondary": [
+                      {
+                        "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant"
+                      }
+                    ],
+                    "defaultPath": "both"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "RoutelocationsObjectPage": {
+          "type": "Component",
+          "id": "RoutelocationsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/Routelocations"
+            }
+          }
+        }
+      }
+    }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "analytical"
+  }
+}

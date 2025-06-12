@@ -1,19 +1,53 @@
 {
-  "name": "vehicle-routing-dashboard",
+  "name": "vrp-scenario",
   "version": "1.0.0",
-  "description": "A simple CAP project.",
+  "description": "A simple CAP project with Fiori Elements.",
   "repository": "<Add your repository here>",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
     "@sap/cds": "^8",
-    "express": "^4"
+    "express": "^4",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "@cap-js/cds-types": "^0.10.0",
     "@cap-js/sqlite": "^1",
-    "@cap-js/cds-types": "^0.10.0"
+    "@sap/ux-ui5-tooling": "^1.18.0",
+    "@ui5/cli": "^3.11.8",
+    "@ui5/fs": "^3.0.5",
+    "@ui5/logger": "^3.0.0"
   },
   "scripts": {
-    "start": "cds-serve"
-  }
+    "start": "cds-serve",
+    "watch-vrp-test": "cds watch --open vrp-test/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-project1": "cds watch --open project1/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-project2": "cds watch --open project2/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-project3": "cds watch --open project3/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-classify-vrp-test": "cds watch --open classify-vrp-test/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-classify-route1": "cds watch --open classify-route1/webapp/index.html?sap-ui-xx-viewCache=false"
+  },
+  "cds": {
+    "log-level": "warn",
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "model": [
+          "db",
+          "srv"
+        ]
+      }
+    },
+    "build": {
+      "target": "."
+    }
+  },
+  "sapux": [
+    "app/vrp-test",
+    "app/project1",
+    "app/project2",
+    "app/project3",
+    "app/classify-vrp-test",
+    "app/classify-route1"
+  ]
 }
