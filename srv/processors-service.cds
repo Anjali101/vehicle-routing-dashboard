@@ -246,11 +246,11 @@ Customer.route_id = Vehicle.route_id {
     sum ( distinct result_vehicle_final_cost_km)  as VehicleCostEfficiency: Decimal(10,4),
 
     case
-        when round( (sum ( distinct result_vehicle_final_cost_km)), 3) <= 143.8 then 1
-        when round( (sum ( distinct result_vehicle_final_cost_km)), 3) <= 171.6 then 2
+        when round( (sum ( distinct result_vehicle_final_cost_km)), 3) <= 143.8 then 5
+        when round( (sum ( distinct result_vehicle_final_cost_km)), 3) <= 171.6 then 4
         when round( (sum ( distinct result_vehicle_final_cost_km)), 3) <= 199.4 then 3
-        when round( (sum ( distinct result_vehicle_final_cost_km)), 3) >= 227.2 then 4
-        else 5
+        when round( (sum ( distinct result_vehicle_final_cost_km)), 3) >= 227.2 then 2
+        else 2
         end as VehicleCostStars: Integer,
 
 
