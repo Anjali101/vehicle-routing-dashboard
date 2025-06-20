@@ -263,3 +263,24 @@ Customer.route_id = Vehicle.route_id {
 
 
 }
+
+service scenariocharacteristics {
+
+    entity characteristics as select from my.Customer {
+
+        key customer_code as CustomerCode,
+        key route_id as Route,
+        count ( distinct customer_code) as CustomerNumber: Integer,
+        round(sum(total_weight_kg), 3)    as SumWeight: Decimal,
+        round(sum(total_volume_m3), 3)    as SumVolume: Decimal,
+        round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) as AverageServiceTime: Decimal,
+        
+
+
+
+
+    } group by route_id; 
+}
+
+
+    

@@ -2,7 +2,7 @@ using Visualization as service from '../../srv/processors-service';
 
 
 
-annotate service.Routelocations with @UI.SelectionFields  : [ Route];
+annotate service.Routelocations with @UI.SelectionFields  : [Route];
 
 annotate service.Routelocations with @Aggregation.ApplySupported  : {
     Transformations : ['aggregate', 'groupby'],
