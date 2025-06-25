@@ -266,20 +266,34 @@ Customer.route_id = Vehicle.route_id {
 
 service scenariocharacteristics {
 
-    entity characteristics as select from my.Customer {
+    entity characteristics as select from my.Customer join my.Vehicle on Customer.route_id = Vehicle.route_id  {
 
         key customer_code as CustomerCode,
-        key route_id as Route,
+        key Customer.route_id as Route,
         count ( distinct customer_code) as CustomerNumber: Integer,
         round(sum(total_weight_kg), 3)    as SumWeight: Decimal,
         round(sum(total_volume_m3), 3)    as SumVolume: Decimal,
         round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) as AverageServiceTime: Decimal,
+        round(sum(number_of_articles), 3)    as SumArticles: Integer,
+        (sum(distinct result_vehicle_total_driving_time_min)) as DrivingTime: Decimal,
+        round(sum(distinct result_vehicle_total_delivery_time_min),3) as DeliveryTime: Decimal,
+        round(sum(distinct result_vehicle_total_active_time_min),3) as ActiveTime: Decimal,
+        round(sum(distinct result_vehicle_final_cost_km),3) as VehicleCost: Decimal,
+
+
+
         
 
 
 
+    } group by Customer.route_id; 
 
-    } group by route_id; 
+
+
+
+
+
+
 }
 
 

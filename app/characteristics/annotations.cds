@@ -16,6 +16,11 @@ annotate service.characteristics with @Aggregation.ApplySupported  : {
         {Property: SumVolume},
         {Property: AverageServiceTime},
         {Property: CustomerNumber},
+        {Property: SumArticles},
+        {Property: ActiveTime},
+        {Property: DeliveryTime},
+        {Property: DrivingTime},
+        {Property: VehicleCost},
        
 
     ]};
@@ -25,10 +30,12 @@ annotate service.characteristics with @(
 
     UI.Chart#MainChart: {
 
-        Title : '{i18n>Route Instances Overview}',
-        ChartType : #Bubble,
+        Title : '{i18n>Characteristics Correlations}',
+        ChartType : #Scatter,
         Dimensions : [Route],
-        DynamicMeasures: ['@Analytics.AggregatedProperty#CustomerNumber','@Analytics.AggregatedProperty#SumWeight','@Analytics.AggregatedProperty#SumVolume', '@Analytics.AggregatedProperty#AvgServiceTime' ],
+        DynamicMeasures: ['@Analytics.AggregatedProperty#CustomerNumber',
+      '@Analytics.AggregatedProperty#SumWeight',
+      '@Analytics.AggregatedProperty#DeliveryTime', ],
         },
 
         Analytics.AggregatedProperty #CustomerNumber : {
@@ -59,6 +66,44 @@ annotate service.characteristics with @(
         AggregatableProperty : AverageServiceTime,
         AggregationMethod : 'average',
         ![@Common.Label] : 'Average Service Time (min)'
+    },
+
+    Analytics.AggregatedProperty #Articles : {
+        $Type : 'Analytics.AggregatedPropertyType',
+        Name : 'NumberofArticles',
+        AggregatableProperty : SumArticles,
+        AggregationMethod : 'sum',
+        ![@Common.Label] : 'Number of Articles'
+    },
+        Analytics.AggregatedProperty #ActiveTime : {
+        $Type : 'Analytics.AggregatedPropertyType',
+        Name : 'TotalActiveTime',
+        AggregatableProperty : ActiveTime,
+        AggregationMethod : 'sum',
+        ![@Common.Label] : '{i18n>Total Active Time (min)}',
+        },
+
+    Analytics.AggregatedProperty #DeliveryTime : {
+        $Type : 'Analytics.AggregatedPropertyType',
+        Name : 'TotalDeliveryTime',
+        AggregatableProperty : DeliveryTime,
+        AggregationMethod : 'sum',
+        ![@Common.Label] : '{i18n>Total Delivery Time (Min)}',
+    },
+
+    Analytics.AggregatedProperty #VehicleCost : {
+        $Type : 'Analytics.AggregatedPropertyType',
+        Name : 'TotalVehicleCost',
+        AggregatableProperty : VehicleCost,
+        AggregationMethod : 'sum',
+        ![@Common.Label] : '{i18n>Total Vehicle Cost (€/km)}',
+    },
+    Analytics.AggregatedProperty #DrivingTime : {
+        $Type : 'Analytics.AggregatedPropertyType',
+        Name : 'TotalDrivingTime',
+        AggregatableProperty : DrivingTime,
+        AggregationMethod : 'sum',
+        ![@Common.Label] : '{i18n>Total Driving Time (min)}',
     }
 );
 
@@ -68,11 +113,12 @@ annotate service.characteristics with @(
 };
 
  annotate service.characteristics with @UI.LineItem: [
-  { Value: Route, @UI.Importance: #High },
-  { Value: CustomerNumber, @UI.Importance: #High },
-  { Value: SumWeight, @UI.Importance: #High },
-  { Value: SumVolume, @UI.Importance: #High },
-  { Value: AverageServiceTime, @UI.Importance: #High }
+  { Value: Route, @UI.Importance: #High, Label: 'Route' },
+  { Value: CustomerNumber, @UI.Importance: #High, Label: 'Amount of Customers' },
+  { Value: AverageServiceTime, @UI.Importance: #High, Label: 'Average Service Time (min)',  },
+  { Value: SumArticles, @UI.Importance: #High, Label: 'Total Number of Articles' },
+  { Value: DeliveryTime, @UI.Importance: #High, Label: ' Total Delivery Time(min)' },
+  { Value: DrivingTime, @UI.Importance: #High, Label: 'Total Driving Time (min)' },
 ];
  
 
@@ -80,3 +126,5 @@ annotate service.characteristics with @UI.SelectionPresentationVariant: {
   SelectionVariant: { SelectOptions: [] },
   PresentationVariant: @UI.PresentationVariant#MainChartView
 };
+annotate service.characteristics with @Capabilities.SearchRestrictions.Searchable: false;
+
