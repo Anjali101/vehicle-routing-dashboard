@@ -268,6 +268,7 @@ service scenariocharacteristics {
 
     entity characteristics as select from my.Customer join my.Vehicle on Customer.route_id = Vehicle.route_id  {
 
+        
         key customer_code as CustomerCode,
         key Customer.route_id as Route,
         count ( distinct customer_code) as CustomerNumber: Integer,
@@ -279,14 +280,15 @@ service scenariocharacteristics {
         round(sum(distinct result_vehicle_total_delivery_time_min),3) as DeliveryTime: Decimal,
         round(sum(distinct result_vehicle_total_active_time_min),3) as ActiveTime: Decimal,
         round(sum(distinct result_vehicle_final_cost_km),3) as VehicleCost: Decimal,
-
-
+        
 
         
 
 
 
     } group by Customer.route_id; 
+
+    action checkAI (Query: String);
 
 
 

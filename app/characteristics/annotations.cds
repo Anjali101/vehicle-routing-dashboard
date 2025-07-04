@@ -113,6 +113,11 @@ annotate service.characteristics with @(
 };
 
  annotate service.characteristics with @UI.LineItem: [
+    {
+            $Type : 'UI.DataFieldForAction',
+            Action : 'scenariocharacteristics.EntityContainer/checkAI',
+            Label : '{i18n>Evaluate_AI}'
+        },
   { Value: Route, @UI.Importance: #High, Label: 'Route' },
   { Value: CustomerNumber, @UI.Importance: #High, Label: 'Amount of Customers' },
   { Value: AverageServiceTime, @UI.Importance: #High, Label: 'Average Service Time (min)',  },
