@@ -44,6 +44,8 @@ entity Vehicle: cuid  {
     result_vehicle_driving_weight_kg: Decimal;
     result_vehicle_driving_volume_m3: Decimal;
     result_vehicle_final_cost_km: Decimal;
+    weightusage: Decimal;
+    volumeusage: Decimal;
 } 
 
 entity Depots: cuid {
@@ -98,6 +100,15 @@ entity Routes as select from Route {
     key route_id as RouteID,
     route_code as RouteCode
 }
+
+
+entity RouteDistances: cuid  {
+    key ID: UUID;
+   route_id: String;
+  total_distance_km: Decimal(10, 3);
+}
+
+
 
 type ClassificationLevel : String enum {
     Low;

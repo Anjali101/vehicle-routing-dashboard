@@ -15,6 +15,9 @@ annotate service.Routelocations with @Aggregation.ApplySupported  : {
         {Property: AverageServiceTime},
         {Property: RouteDate},
         {Property: RouteCode},
+        {Property: TotalCustomers},
+        {Property: VehicleCostEfficiency},
+
   
       
        
@@ -33,7 +36,7 @@ annotate service.Routelocations with @(
         Title : '{i18n>Route Instances Overview}',
         ChartType : #Column,
         Dimensions : [Route],
-        DynamicMeasures: ['@Analytics.AggregatedProperty#TotalArticles','@Analytics.AggregatedProperty#SumWeight','@Analytics.AggregatedProperty#SumVolume', '@Analytics.AggregatedProperty#AvgServiceTime' ],
+        DynamicMeasures: [ '@Analytics.AggregatedProperty#TotalCustomers' ],
         },
 
         Analytics.AggregatedProperty #TotalArticles : {
@@ -64,6 +67,22 @@ annotate service.Routelocations with @(
         AggregatableProperty : AverageServiceTime,
         AggregationMethod : 'average',
         ![@Common.Label] : 'Average Service Time (min)'
+    },
+
+      Analytics.AggregatedProperty #TotalCustomers : {
+        $Type : 'Analytics.AggregatedPropertyType',
+        Name : 'TotalCustomers',
+        AggregatableProperty : TotalCustomers,
+        AggregationMethod : 'sum',
+        ![@Common.Label] : 'Total Amount of Customers'
+    },
+
+      Analytics.AggregatedProperty #VehicleCost : {
+        $Type : 'Analytics.AggregatedPropertyType',
+        Name : 'VehicleCost',
+        AggregatableProperty : VehicleCostEfficiency,
+        AggregationMethod : 'sum',
+        ![@Common.Label] : 'Total Route Costs of Vehicle'
     }
 );
 
@@ -71,7 +90,7 @@ annotate service.Routelocations with @(
 
  annotate service.Routelocations with @UI.PresentationVariant#MainChartView: {
   Visualizations: ['@UI.Chart#MainChart', '@UI.LineItem'],
-  RequestAtLeast: [SumArticles,SumVolume,SumWeight]
+  RequestAtLeast: [TotalCustomers]
 };
 
 annotate service.Routelocations with @UI.SelectionPresentationVariant: {
@@ -81,10 +100,12 @@ annotate service.Routelocations with @UI.SelectionPresentationVariant: {
 
 annotate service.Routelocations with {
   Route              @Common.Label: 'Route';
+  TotalCustomers        @Common.Label: 'Amount of Customers';
   SumArticles        @Common.Label: 'Number of Articles';
   SumWeight          @Common.Label: 'Total Weight (kg)';
   SumVolume          @Common.Label: 'Total Volume (m³)';
   AverageServiceTime @Common.Label: 'Average Service Time (min)';
+  VehicleCostEfficiency @Common.Label: 'Total Vehicle Route Cost (€/km)';
   RouteDate          @Common.Label: 'Route Date';
   RouteCode          @Common.Label: 'Route Code';
 
@@ -96,17 +117,14 @@ annotate service.Routelocations with @Capabilities.SearchRestrictions.Searchable
 annotate service.Routelocations with 
   @UI.LineItem: [
     { Value: Route, @UI.Importance: #High },
-    { Value: RouteCode, @UI.Importance: #High },
     { Value: RouteDate, @UI.Importance: #High },
+    { Value: TotalCustomers, @UI.Importance: #High },
     { Value: AverageServiceTime, @UI.Importance: #High },
     { Value: RouteDate, @UI.Importance: #High },
     { Value: SumArticles, @UI.Importance: #High },
     { Value: SumWeight, @UI.Importance: #High },
     { Value: SumVolume, @UI.Importance: #High },
-    { Value: DepotLatitude, @UI.Importance: #High },
-      { Value: DepotlLongitude, @UI.Importance: #High },
-     
-   
+    { Value: VehicleCostEfficiency, @UI.Importance: #High },
   ];
 
 
@@ -125,10 +143,18 @@ annotate service.Vehicle with @UI.Chart #Dist: {
   { Value: Route, Label: 'Route' },
   { Value: RouteCode, Label: 'Route Code' },
   { Value: RouteDate, Label: 'Route Date' },
+  { Value: TotalCustomers, Label: 'Total Customers' },
   { Value: SumArticles, Label: 'Total Articles on Route' },
   { Value: SumWeight, Label: ' Total Package Weight (kg)' },
   { Value: SumVolume, Label: 'Total Package Volume (m³)' },
   { Value: AverageServiceTime, Label: 'Average Service Time (min)' },
+  { Value: VehicleCostEfficiency, Label: 'Total Vehicle Route Cost (€/km)' },
+  {Value: to_averages.AvgWeightUsage, Label: ' Average Weight Usage (%)'},
+  {Value: to_averages.AvgVolumeUsage, Label: ' Average Volume Usage (%)'}
+  
+
+
+ 
   
 ];
 
@@ -138,10 +164,17 @@ annotate service.Vehicle with
     { Value: VehicleCode, Label: 'Vehicle Code' },
     { Value: DrivingTime, Label: 'Driving Time (min)' },
     { Value: DeliveryTime, Label: 'Delivery Time (min)'},
+    { Value: result_vehicle_driving_weight_kg, Label: 'Driving Weight (kg)'},
+    { Value: VehicleTotalweight, Label: 'Vehicle Weight Capacity(kg)' },
     { Value: result_vehicle_driving_volume_m3, Label: 'Driving Volume (m^3)'},
-     { Value: result_vehicle_driving_weight_kg, Label: 'Driving Volume (kg)'},
-     { Value: VehicleTotalweight, Label: 'Vehicle Wight Capacity(kg)' },
-      {Value: VehicleMaxVolume, Label: 'Vehicle Volume Capacity (m^3)' },
+    {Value: VehicleMaxVolume, Label: 'Vehicle Volume Capacity (m^3)' },
+    {Value: VehicleCost, Label: 'Vehicle Cost (€/km)' },
+    {Value: WeightUsage, Label: 'Weight Usage (%)' },
+    {Value: VolumeUsage, Label: 'Volume Usage (%)' },
+
+
+    
+
 
   ];
 

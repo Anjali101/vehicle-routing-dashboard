@@ -1,98 +1,128 @@
-const cds = require('@sap/cds')
-require('dotenv').config();
-
 module.exports = class scenariocharacteristics extends cds.ApplicationService {
-  /** Registering custom event handlers */
   init() {
-    this.before("UPDATE", "Incidents", (req) => this.onUpdate(req));
-    this.before("CREATE", "Incidents", (req) => this.changeUrgencyDueToSubject(req.data));
     this.on("checkAI", (req) => this.onCheckAI(req));
     this.on("diagram", (req) => this.onDiagram(req));
     return super.init();
   }
 
   async onCheckAI(req) {
-    // Pull all characteristics data
-    console.log('🚨 onCheckAI was triggered with input:', req.data);
     const data = await SELECT.from(this.entities.characteristics);
-  
-    if (!data?.length) return req.error(400, 'No data available in characteristics.');
-  
-    // Dynamically extract column headers
-    const headers = Object.keys(data[0]);
+    if (!data?.length) return req.error(400, "No data available.");
+
+    const headers = Object.keys(data[0]).filter(h => h !== 'CustomerCode');
     let csv = headers.join(',') + '\n';
-  
-    // Add each row
     data.forEach(row => {
       const line = headers.map(h => row[h]).join(',');
       csv += line + '\n';
     });
-  
-    // User question
+
     const userInput = req.data.Query;
-  
-    // Call AI
+    const contextPrompt = `
+Given this delivery logistics data (CSV below), answer the following question.
+Columns include:
+- Route: Route ID
+- CustomerNumber: Number of Customers
+- SumWeight: Total weight
+- SumVolume: Total volume
+- AverageServiceTime: Avg service time
+- SumArticles: Total articles
+- DrivingTime, DeliveryTime, ActiveTime: Time metrics
+- VehicleCost: Cost associated
+
+Question:
+${userInput}`.trim();
+
     const token = await getToken();
-    const response = await doQuery(token, userInput, csv);
-  
-    const message = response?.choices?.[0]?.message?.content || 'No AI response.';
-  
-    console.log("🧠 AI Question:", userInput);
-    console.log("📊 CSV Sample:", csv.slice(0, 200) + '...');
-    console.log("📝 AI Answer:", message);
-  
-    req.info(message);
+    const response = await doQuery(token, contextPrompt, csv);
+    const message = response?.choices?.[0]?.message?.content || "AI did not return a result.";
+
+    console.log("🧠 AI Input:\n", userInput);
+    console.log("📥 AI Output:\n", message);
+
     return message;
   }
 
   async onDiagram(req) {
-    let incidents = await SELECT`ID,title,urgency_code,status_code`.from(this.entities.Incidents);
-    let formattedIncidents = JSON.stringify(incidents);
-    console.log(formattedIncidents);
-    let userInput = req.data.Query;
-    let bearerToken = await getToken();
-    let response = await doDiagramQuery(bearerToken, userInput, formattedIncidents);
+    const { xField, yField, Query } = req.data;
 
-    return response.choices[0].message.content;
+    const allowedFields = [
+      "CustomerNumber", "SumWeight", "SumVolume", "AverageServiceTime",
+      "SumArticles", "DrivingTime", "DeliveryTime", "ActiveTime", "VehicleCost"
+    ];
 
-    //req.info(response.choices[0].message.content);
+    if (!allowedFields.includes(xField) || !allowedFields.includes(yField)) {
+      return req.error(400, `Invalid field(s): ${xField}, ${yField}`);
+    }
+    if (xField === yField) {
+      return req.error(400, "xField and yField must be different.");
+    }
 
-    console.log("Question: \n" + userInput);
+    const rows = await SELECT.from(this.entities.characteristics).columns(xField, yField);
+    const jsonData = JSON.stringify(rows, null, 2);
+
+    const defaultPrompt = `
+You are a helpful assistant that generates clean SVG scatter plots with regression lines.
+
+Given a JSON array of objects with numeric fields "${xField}" and "${yField}", generate a complete and valid <svg> element that includes:
+
+1. A scatter plot:
+   - Plot each (${xField}, ${yField}) pair as a blue circle (radius 4–6).
+   - Fit a red regression line to the data using linear regression.
+   - Compute the regression function (e.g., "y = 1.25x + 34.6") and display it inside the plot, preferably top-right or top-left.
+
+2. Axis styling:
+   - Add numeric tick marks (with labels) on both X and Y axes.
+   - Label the X-axis as "${xField}" and the Y-axis as "${yField}" using clear <text> elements.
+   - Ensure axis labels are correctly positioned (X-axis centered below, Y-axis rotated left).
+
+3. Layout and scale:
+   - Set canvas size to at least width="600" and height="400".
+   - Use padding/margins so no elements are clipped (at least 40px on each side).
+   - Flip the Y-axis so values increase upwards (not inverted).
+   - Keep font sizes small but readable (10–12px) for axis and tick labels.
+
+Return only a raw <svg>...</svg> block with no HTML wrappers, markdown, or JavaScript.
+`.trim();
+
+    const finalQuery = Query || defaultPrompt;
+    const token = await getToken();
+    const response = await doDiagramQuery(token, finalQuery, jsonData);
+
+    let svg = response?.choices?.[0]?.message?.content || "<p>AI failed to generate chart.</p>";
+    if (svg.startsWith("```")) {
+      svg = svg.replace(/```(?:html|svg)?/g, "").trim();
+    }
+
+    console.log("📈 Generated SVG for:", xField, yField);
+    return svg;
   }
+};
 
-  /** Custom Validation */
-  async onUpdate(req) {
-    const { status_code } = await SELECT.one(req.subject, i => i.status_code).where({ ID: req.data.ID })
-    if (status_code === 'C')
-      return req.reject(`Can't modify a closed incident`)
-  }
-}
 
+// --- 🔐 SAP AI Core Token Fetch ---
 async function getToken() {
-
   const url = 'https://btplearning-w4kbx4of.authentication.us10.hana.ondemand.com/oauth/token?grant_type=client_credentials&response_type=token';
   const username = process.env.USERNAME;
   const password = process.env.PASSWORD;
 
-  const headers = new Headers();
-  headers.append('Authorization', 'Basic ' + btoa(username + ':' + password));
+  const headers = {
+    'Authorization': 'Basic ' + Buffer.from(username + ':' + password).toString('base64'),
+    'Content-Type': 'application/x-www-form-urlencoded'
+  };
 
-  return fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
-    headers: headers
-  })
-    .then(response => response.json())
-    .then(data => {
-      return data.access_token;
-    })
-    .catch(error => console.error(error));
+    headers
+  });
 
-
+  const data = await response.json();
+  return data.access_token;
 }
 
-async function doQuery(token, query, input) {
-
+// --- 🧠 SAP AI Core Diagram Generation ---
+async function doDiagramQuery(token, query, inputJson) {
   const url = "https://api.ai.prod.us-east-1.aws.ml.hana.ondemand.com/v2/inference/deployments/d85ed0c1b02d8a27/chat/completions?api-version=2023-05-15";
+
   const headers = {
     "Content-Type": "application/json",
     "AI-Resource-Group": "default",
@@ -100,30 +130,61 @@ async function doQuery(token, query, input) {
   };
 
   const body = {
-    "messages": [
+    
+    messages: [
       {
-        "role": "user",
-        "content": "Given following data in csv format:" + "\n \n" + input + "\n \n" + query
+        role: "system",
+        content: "You are a helpful assistant that outputs HTML/SVG for visualizing data. Step 1: Repeat the CSV data you received exactly as it was given."
+      },
+      {
+        role: "user",
+        content: `Given the following JSON array:\n\n${inputJson}\n\n${query}`
       }
     ],
-    "max_tokens": 1000,
-    "temperature": 0.0,
-    "frequency_penalty": 0,
-    "presence_penalty": 0,
-    "stop": "null"
+    max_tokens: 5000,
+    temperature: 0.2
   };
 
-  const requestOptions = {
+  const response = await fetch(url, {
     method: "POST",
-    headers: headers,
+    headers,
     body: JSON.stringify(body)
+  });
+
+  return await response.json();
+}
+
+// --- 🧠 SAP AI Core Data Q&A ---
+async function doQuery(token, query, csvData) {
+  const url = "https://api.ai.prod.us-east-1.aws.ml.hana.ondemand.com/v2/inference/deployments/d85ed0c1b02d8a27/chat/completions?api-version=2023-05-15";
+
+  const headers = {
+    "Content-Type": "application/json",
+    "AI-Resource-Group": "default",
+    "Authorization": "Bearer " + token
   };
 
-  return fetch(url, requestOptions)
-    .then(response => response.json())
-    .then(data => {
-      return data
-    })
-    .catch(error => console.log(error));
+  const body = {
+    messages: [
+      {
+        role: "system",
+        content: "You are a helpful assistant that analyzes CSV data and answers questions."
+      },
+      {
+        role: "user",
+        content: `Given the following CSV:\n\n${csvData}\n\n${query}`
+      }
+    ],
+    max_tokens: 1000,
+    temperature: 0.0
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body)
+  });
+
+  return await response.json();
 }
 

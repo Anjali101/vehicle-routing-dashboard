@@ -21,6 +21,14 @@ annotate service.CustomerArticleSummary with @UI.LineItem: [
         Target : '@UI.DataPoint#VehicleRating',
         ![@HTML5.CssDefaults] : {width : '20rem'}
     },
+    {
+        $Type : 'UI.DataFieldForAnnotation',
+        Label : 'Route Distance',
+        Target : '@UI.DataPoint#RouteDistance',
+        ![@HTML5.CssDefaults] : {width : '20rem'}
+    },
+
+  
  
 
 ];
@@ -76,6 +84,18 @@ annotate service.CustomerArticleSummary with @UI.Facets: [
         $Type: 'UI.ReferenceFacet',
         Label: 'Vehicle Cost',
         Target: '@UI.FieldGroup#VehicleCost'
+      }
+    ]
+  },
+  {
+    $Type: 'UI.CollectionFacet',
+    Label: 'Route Distance',
+    ID: 'RouteDistanceTab',
+    Facets: [
+      {
+        $Type: 'UI.ReferenceFacet',
+        Label: 'Vehicle Cost',
+        Target: '@UI.FieldGroup#RouteDist'
       }
     ]
   }
@@ -147,6 +167,22 @@ annotate service.CustomerArticleSummary with @UI.FieldGroup #VehicleCost: {
 
 
 
+annotate service.CustomerArticleSummary with @UI.FieldGroup #RouteDist: {
+  Data: [
+    {
+      $Type: 'UI.DataFieldForAnnotation',
+      Label: 'RouteDistance',
+      Target: '@UI.DataPoint#RouteDistance'
+    },
+    { Label: 'Description', Value: 'The total Distance driven on the Route'},
+    { Value: TotalDistance, Label: 'Total Route Distance (km) '},
+    { Value: ReferenceValueDist, Label: 'Reference Value (Average across all Routes)', @UI.Importance : #High}
+
+  ]
+};
+
+
+
 annotate service.CustomerArticleSummary with @(
   
   UI.DataPoint #Rating: {
@@ -167,6 +203,20 @@ annotate service.CustomerArticleSummary with @(
   UI.DataPoint #VehicleRating: {
 
     Value: routecost.VehicleCostStars,
+    TargetValue: 5,
+    Visualization: #Rating
+
+
+  }
+  
+);
+
+
+annotate service.CustomerArticleSummary with @(
+  
+  UI.DataPoint #RouteDistance: {
+
+    Value: route_distance_stars,
     TargetValue: 5,
     Visualization: #Rating
 

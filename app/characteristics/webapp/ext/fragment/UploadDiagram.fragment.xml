@@ -1,0 +1,49 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+  
+  <Dialog
+    id="scatterDialog"
+    title="Show Regression"
+    contentWidth="800px"
+    contentHeight="600px"
+    draggable="true"
+    resizable="true">
+
+    <content>
+      <VBox
+        id="scatterVBox"
+        alignItems="Center"
+        justifyContent="Start"
+        width="100%"
+        renderType="Bare"
+        class="sapUiSmallMargin">
+
+        <Label id="xAxisLabel" text="X Axis Field" />
+        <Select id="xFieldSelect" width="300px" items="{fieldsModel>/fields}">
+          <core:Item id="xFieldItem" key="{fieldsModel>name}" text="{fieldsModel>label}" />
+        </Select>
+
+        <Label id="yAxisLabel" text="Y Axis Field" />
+        <Select id="yFieldSelect" width="300px" items="{fieldsModel>/fields}">
+          <core:Item id="yFieldItem" key="{fieldsModel>name}" text="{fieldsModel>label}" />
+        </Select>
+
+        <Button id="generatePlotButton" text="Generate Plot" press=".onGeneratePlot" />
+
+        <HBox id="svgBox" alignItems="Center" justifyContent="Center" width="100%" height="100%">
+          <core:HTML id="svgOutput" content="" />
+        </HBox>
+      </VBox>
+    </content>
+
+    <endButton>
+      <Button id="closeDialogButton" text="Close" press=".onUploadDialogClose" />
+    </endButton>
+
+  </Dialog>
+
+  
+
+
+</core:FragmentDefinition>

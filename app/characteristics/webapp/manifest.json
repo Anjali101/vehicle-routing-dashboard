@@ -28,14 +28,7 @@
   },
   "sap.ui": {
     "technology": "UI5",
-    "icons": {
-      "icon": "",
-      "favIcon": "",
-      "phone": "",
-      "phone@2": "",
-      "tablet": "",
-      "tablet@2": ""
-    },
+    "icons": {},
     "deviceTypes": {
       "desktop": true,
       "tablet": true,
@@ -77,6 +70,24 @@
         "uri": "i18n/i18n.properties"
       }
     },
+    "extends": {
+      "extensions": {
+        "sap.ui.viewExtensions": {
+          "sap.fe.templates.AnalyticalListPage.view.AnalyticalListPage": {
+            "AfterToolbar": {
+              "className": "sap.ui.core.Fragment",
+              "fragmentName": "characteristics.ext.fragment.ToolbarExtension",
+              "type": "XML"
+            }
+          }
+        },
+        "sap.ui.controllerExtensions": {
+          "sap.fe.templates.ListReport.ListReportController": {
+            "controllerName": "characteristics.controller.ListReportExt"
+          }
+        }
+      }
+    },
     "resources": {
       "css": []
     },
@@ -113,23 +124,32 @@
               },
               "controlConfiguration": {
                 "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "actions": {
+                    "openDiagram": {
+                      "id": "openDiagram",
+                      "text": "{{Generate_Scatter_Plot}}",
+                      "press": ".extension.characteristics.controller.ListReportExt.openDiagram",
+                      "requiresSelection": false
+                    }
+                  },
                   "tableSettings": {
                     "type": "ResponsiveTable",
                     "selectionMode": "Multi"
                   }
                 }
               },
+              
               "views": {
                 "paths": [
                   {
                     "primary": [
                       {
-                        "annotationPath": "com.sap.vocabularies.UI.v1.Chart"
+                        "annotationPath": "com.sap.vocabularies.UI.v1.Chart#MainChart"
                       }
                     ],
                     "secondary": [
                       {
-                        "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant"
+                        "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant#MainChartView"
                       }
                     ],
                     "defaultPath": "both"

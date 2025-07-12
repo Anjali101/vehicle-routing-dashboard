@@ -63,18 +63,7 @@
       "tablet": true,
       "phone": true
     },
-    "extends": {
-  "extensions": {
-    "sap.ui.viewExtensions": {
-      "sap.fe.templates.AnalyticalListPage.view.AnalyticalListPage": {
-        "AfterToolbar": {
-          "className": "sap.ui.core.Fragment",
-          "fragmentName": "vrptest.ext.fragments.VehicleStatsButton",
-          "type": "XML"
-        }
-      }
-    }
-  },
+  
   "extends": {
   "extensions": {
     "sap.ui.viewExtensions": {
@@ -88,8 +77,7 @@
     }
   }
 }
-}
-  },
+},
   "sap.ui5": {
     "flexEnabled": true,
     "dependencies": {
@@ -183,6 +171,14 @@
                 }
               },
               "controlConfiguration": {
+                 "actions": {
+            "openDiagram": {
+                "id": "openUpDiagram",
+                "text": "{{Generate_Diagram}}",
+                "press": ".extension.ns.incidents.controller.ListReportExt.openDiagram",
+                "requiresSelection": false
+            }
+        },
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
                     "type": "ResponsiveTable",

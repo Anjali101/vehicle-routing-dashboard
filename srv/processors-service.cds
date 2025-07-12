@@ -6,7 +6,8 @@ service Visualization {
     entity Routelocations as select from my.Customer as Customer 
     left join my.Depots as Depot on Customer.route_id = Depot.route_id
     left join my.Route as Way on Customer.route_id = Way.route_id 
-    left  join  my.Vehicle as Vehicle on Customer.route_id = Vehicle.route_id{
+    left  join  my.Vehicle as Vehicle on Customer.route_id = Vehicle.route_id 
+     {
 
        
         @Common.ValueList: {
@@ -21,6 +22,12 @@ service Visualization {
         }
 
 
+        to_Vehicles: Composition of many Vehicle on to_Vehicles.Route = $self.Route,
+        to_VehicleDistribution: Composition of  many VehicleDistribution on to_VehicleDistribution.Route = $self.Route,
+        to_VehicleDistributionView: Composition of  many VehicleDistributionView on to_VehicleDistributionView.Route = $self.Route,
+        to_Customers: association to many RouteCustomers on to_Customers.RouteID = $self.Route,
+        to_blocks: Association to many  BlockedRoads on True,
+        to_averages: Association to many averages on to_averages.Route = $self.Route,
 
         @UI.Hidden: false
         key Customer.route_id as Route,
@@ -28,23 +35,44 @@ service Visualization {
         round(sum(Customer.number_of_articles), 3) as SumArticles: Decimal,
         round(sum(Customer.total_weight_kg), 3)    as SumWeight: Decimal,
         round(sum(Customer.total_volume_m3), 3)    as SumVolume: Decimal,
+        count(distinct(Customer.customer_code))    as TotalCustomers: Integer,
         round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) as AverageServiceTime: Decimal,
         Way.route_date as RouteDate: DateTime,
         Way.route_code as RouteCode: String,
         Depot.depot_latitude as DepotLatitude,
         Depot.depot_longitude as DepotlLongitude,
         Depot.depot_code as DepotCode,
-
-
-        to_Vehicles: Composition of many Vehicle on to_Vehicles.Route = $self.Route,
-        to_VehicleDistributionView: Composition of  many VehicleDistributionView on to_VehicleDistributionView.Route = $self.Route,
-        to_Customers: association to many RouteCustomers on to_Customers.RouteID = $self.Route,
-        to_blocks: Association to many  BlockedRoads on True,
+        sum(distinct(Vehicle.result_vehicle_final_cost_km)) as VehicleCostEfficiency: Decimal,
+       
+   
 
 
 
     
     }group by Customer.route_id;
+
+
+    entity averages as select from my.Vehicle {
+
+        key ID as Identifierm,
+        route_id as Route,
+        round(
+  avg( case
+      when weightusage != 0 then weightusage
+    end
+  ), 2
+) as AvgWeightUsage: Decimal(5,2),
+
+round(
+  avg(
+    case
+      when volumeusage != 0 then volumeusage
+    end
+  ), 2
+) as AvgVolumeUsage: Decimal(5,2),
+
+    } group by route_id;
+
 
 
     entity Vehicle as select from  my.Vehicle{
@@ -59,10 +87,16 @@ service Visualization {
         result_vehicle_total_delivery_time_min as DeliveryTime,
         result_vehicle_driving_weight_kg,
         result_vehicle_driving_volume_m3,
+        result_vehicle_final_cost_km as VehicleCost,
+        weightusage as WeightUsage,
+        volumeusage as VolumeUsage,
+       
+        
     } where result_vehicle_total_driving_time_min != 0;
 
    entity VehicleDistribution as select from my.Vehicle {
     key vehicle_code                 as VehicleCode: String,
+    route_id                         as Route,
     min(vehicle_number)             as VehicleNumber: Integer,
     min(vehicle_total_weight_kg)    as TotalWeight: Decimal,
     min(vehicle_total_volume_m3)    as TotalVolume: Decimal,
@@ -111,7 +145,7 @@ service RouteClassification{
 
 
 
-entity CustomerArticleSummary as select from my.Customer  {
+entity CustomerArticleSummary as select from my.Customer left join my.RouteDistances on Customer.route_id = RouteDistances.route_id  {
 
 
        @Common.ValueList : {
@@ -190,7 +224,19 @@ end as AverageServiceStars: Integer,
      cast(40.18 as Decimal(5,2)) as ReferenceValueConstraintLevel,
 
 
-} group by Customer.route_id ;
+    RouteDistances.total_distance_km as TotalDistance: Decimal(10, 3),
+    cast(3385.376 as Decimal(5,2)) as ReferenceValueDist,
+
+case
+  when total_distance_km is null then 0
+  when total_distance_km <= 1951.000 then 5
+  when total_distance_km <= 2474.000 then 4
+  when total_distance_km <= 4431.000 then 3
+  when total_distance_km <= 5361.000 then 2
+  else 1
+end as route_distance_stars: Integer
+
+} group by Customer.route_id, total_distance_km ;
 
 
 entity constraintcount as select from my.Constraints {
@@ -266,31 +312,72 @@ Customer.route_id = Vehicle.route_id {
 
 service scenariocharacteristics {
 
-    entity characteristics as select from my.Customer join my.Vehicle on Customer.route_id = Vehicle.route_id  {
+    entity characteristics as select from my.Customer
+    left join my.Vehicle on Customer.route_id = Vehicle.route_id
+    left join my.RouteDistances on Customer.route_id = RouteDistances.route_id
+    join my.Constraints on Customer.route_id = Constraints.route_id
+{
+    key Customer.route_id as Route,
+    count(distinct Customer.customer_code) as CustomerNumber: Integer,
+    round(sum(Customer.total_weight_kg), 3) as SumWeight: Decimal,
+    round(sum(Customer.total_volume_m3), 3) as SumVolume: Decimal,
+    round(avg(Customer.customer_time_window_to_min - Customer.customer_time_window_from_min), 3) as AverageServiceTime: Decimal,
+    sum(Customer.number_of_articles) as SumArticles: Integer,
+    RouteDistances.total_distance_km as TotalDistance,
+    round(avg( case when weightusage != 0 then weightusage end ), 2) as AvgWeightUsage: Decimal(5,2),
+    round(avg(case when volumeusage != 0 then volumeusage end), 2) as AvgVolumeUsage: Decimal(5,2),
 
-        
-        key customer_code as CustomerCode,
-        key Customer.route_id as Route,
-        count ( distinct customer_code) as CustomerNumber: Integer,
-        round(sum(total_weight_kg), 3)    as SumWeight: Decimal,
-        round(sum(total_volume_m3), 3)    as SumVolume: Decimal,
-        round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) as AverageServiceTime: Decimal,
-        round(sum(number_of_articles), 3)    as SumArticles: Integer,
-        (sum(distinct result_vehicle_total_driving_time_min)) as DrivingTime: Decimal,
-        round(sum(distinct result_vehicle_total_delivery_time_min),3) as DeliveryTime: Decimal,
-        round(sum(distinct result_vehicle_total_active_time_min),3) as ActiveTime: Decimal,
-        round(sum(distinct result_vehicle_final_cost_km),3) as VehicleCost: Decimal,
-        
+    round(sum(distinct Vehicle.result_vehicle_total_driving_time_min), 3) as DrivingTime: Decimal,
+    round(sum(distinct Vehicle.result_vehicle_total_delivery_time_min),3) as DeliveryTime: Decimal,
+    round(sum(distinct Vehicle.result_vehicle_total_active_time_min),3) as ActiveTime: Decimal,
+    round(sum(distinct Vehicle.result_vehicle_final_cost_km),3) as VehicleCost: Decimal,
 
-        
-
-
-
-    } group by Customer.route_id; 
-
-    action checkAI (Query: String);
+    count (distinct(Constraints.ID)) as ConstraintCount: Integer,
 
 
+    round(count(distinct(Constraints.ID)) * 1.0 / nullif(count(distinct Constraints.sdvrp_constraint_customer_code), 0), 2) as AvgConstraintsPerCustomer: Decimal(5,2)
+
+
+
+
+
+
+
+} group by Customer.route_id;
+
+    action checkAI (Query: String) ;
+    function diagram(xField: String, yField: String, Query: String) returns LargeString;
+
+
+
+    entity constraintcomplexity as select from my.Constraints {
+
+        key ID as ID,
+        key route_id as Route,
+
+        count (distinct(Constraints.ID)) as ConstraintCount: Integer,
+
+          count(distinct(Constraints.ID)) as TotalConstraints: Integer,
+         count(distinct Constraints.sdvrp_constraint_customer_code) as TotalCustomers: Integer,
+        round(count(distinct(Constraints.ID)) * 1.0 / nullif(count(distinct Constraints.sdvrp_constraint_customer_code), 0), 2) as AvgConstraintsPerCustomer: Decimal(5,2)
+
+
+    }group by route_id;
+
+    entity total_distance_km as select from my.RouteDistances{
+
+        key route_id as Route,
+        total_distance_km as TotalDistance
+
+
+    } group by route_id;
+    entity utilization as select from my.Vehicle {
+
+       key ID as ID,
+       key route_id as Route,
+      
+
+    } group by route_id;
 
 
 
