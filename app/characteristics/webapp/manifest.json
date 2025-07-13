@@ -166,7 +166,15 @@
           "options": {
             "settings": {
               "editableHeaderContent": false,
-              "contextPath": "/characteristics"
+              "contextPath": "/characteristics",
+              "autoBind": true,
+              "content": {
+                 "body": {
+                  "sections": {
+                     "facets": {}
+                             }
+                         }
+                         }
             }
           }
         }

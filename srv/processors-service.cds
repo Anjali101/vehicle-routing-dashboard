@@ -40,7 +40,7 @@ service Visualization {
         Way.route_date as RouteDate: DateTime,
         Way.route_code as RouteCode: String,
         Depot.depot_latitude as DepotLatitude,
-        Depot.depot_longitude as DepotlLongitude,
+        Depot.depot_longitude as DepotLongitude,
         Depot.depot_code as DepotCode,
         sum(distinct(Vehicle.result_vehicle_final_cost_km)) as VehicleCostEfficiency: Decimal,
        
@@ -169,6 +169,7 @@ entity CustomerArticleSummary as select from my.Customer left join my.RouteDista
     key Customer.route_id as Route ,
     sum(number_of_articles) as TotalArticles: Integer,
 
+    round(avg(customer_time_window_to_min - customer_time_window_from_min), 3) as AverageServiceTime: Decimal,
 
     count(distinct customer_code) as Customers: Integer,
 
@@ -311,10 +312,21 @@ Customer.route_id = Vehicle.route_id {
 }
 
 service scenariocharacteristics {
+    entity SpreadVehicleAnalysis as select from my.Vehicle {
+    key route_id as Route,
+    sum(vehicle_total_weight_kg) as VehicleCapacityKG: Decimal(10,2),
+    sum(vehicle_total_volume_m3) as VehicleVolumeM3: Decimal(10,2)
+  } group by route_id;
 
     entity characteristics as select from my.Customer
     left join my.Vehicle on Customer.route_id = Vehicle.route_id
-    left join my.RouteDistances on Customer.route_id = RouteDistances.route_id
+    left join my.Depots as Depot on Customer.route_id = Depot.route_id
+    left join my.DepotDistance as Dist 
+        on Customer.route_id = Dist.route_id 
+        and Customer.customer_code = Dist.customer_code
+    left join my.RouteDistances as RouteDistances on Customer.route_id = RouteDistances.route_id
+    left join SpreadVehicleAnalysis as VehicleAgg 
+        on Customer.route_id = VehicleAgg.Route
     join my.Constraints on Customer.route_id = Constraints.route_id
 {
     key Customer.route_id as Route,
@@ -333,6 +345,12 @@ service scenariocharacteristics {
     round(sum(distinct Vehicle.result_vehicle_final_cost_km),3) as VehicleCost: Decimal,
 
     count (distinct(Constraints.ID)) as ConstraintCount: Integer,
+
+ 
+    max(Dist.distance_km) as MaxCustomerDistanceKM : Decimal(10,2),
+    VehicleAgg.VehicleCapacityKG,
+    VehicleAgg.VehicleVolumeM3,
+
 
 
     round(count(distinct(Constraints.ID)) * 1.0 / nullif(count(distinct Constraints.sdvrp_constraint_customer_code), 0), 2) as AvgConstraintsPerCustomer: Decimal(5,2)
