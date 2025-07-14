@@ -48,83 +48,87 @@ ${userInput}`.trim();
 
   async onDiagram(req) {
     const { xField, yField, Query } = req.data;
-
+  
     const allowedFields = [
       "CustomerNumber", "SumWeight", "SumVolume", "AverageServiceTime",
       "SumArticles", "DrivingTime", "DeliveryTime", "ActiveTime", "VehicleCost", "ConstraintCount",
       "AvgConstraintsPerCustomer", "AvgWeightUsage", "AvgVolumeUsage", "MaxCustomerDistanceKM",
       "VehicleCapacityKG", "VehicleVolumeM3", "avg_customer_spread", "avg_customer_spread_time"
     ];
-
+  
     if (!allowedFields.includes(xField) || !allowedFields.includes(yField)) {
       return req.error(400, `Invalid field(s): ${xField}, ${yField}`);
     }
     if (xField === yField) {
       return req.error(400, "xField and yField must be different.");
     }
-
+  
     const rows = await SELECT.from(this.entities.characteristics).columns(xField, yField);
     const jsonData = JSON.stringify(rows, null, 2);
-
+  
     const defaultPrompt = `
-You are a data visualization assistant specialized in generating clean and accurate SVG scatter plots with linear regression lines.
+  You are a data assistant. You will be given a JSON array of numeric data points representing two fields: "${xField}" (X axis) and "${yField}" (Y axis).
 
-Your task is to generate a complete, valid, and responsive <svg> element using a JSON array of objects with two numeric fields: "${xField}" and "${yField}".
+Perform the following steps carefully and return only a strict JSON object with the results.
 
-Requirements:
+### Steps:
 
-1. Scatter Plot
-- Plot each (${xField}, ${yField}) pair as a blue circle (radius between 4 and 6 pixels).
-- Dynamically scale X and Y values to fit within a defined plot area inside the canvas.
-- Flip the Y-axis so that larger Y-values appear higher on the screen.
-- Do not hardcode pixel positions — derive them from actual data min/max ranges.
+1. Compute a **simple linear regression**:
+   - Return slope (m)
+   - Return intercept (b)
+   - Include the formula: y = mx + b
 
-2. Regression Line
-- Perform linear regression using the given data (least squares).
-- Compute slope and intercept: y = mx + b.
-- Use the min and max X values to compute corresponding Y values via the regression equation.
-- Draw a red line through those two endpoints (scaled to canvas).
-- Include the regression formula (e.g., y = 1.25x + 34.6) as a red <text> element in the top-right of the plot.
+2. Determine:
+   - xMin and xMax (the minimum and maximum values of "${xField}")
+   - yMin and yMax (the minimum and maximum values of "${yField}")
 
-3. Axes and Tick Marks
-- Add both X and Y axes as black lines.
-- Compute and display at least 3–5 evenly spaced numeric ticks on each axis (scaled and labeled).
-- Label the X-axis as "${xField}" and the Y-axis as "${yField}".
-- Position X-axis label centered below the axis; position Y-axis label rotated 90 degrees, centered on the left.
+3. Normalize each data point:
+   - Use min-max normalization to convert x and y values into the [0,1] range.
+   - Formula for normalization:  
+     - normalizedX = (x - xMin) / (xMax - xMin)  
+     - normalizedY = (y - yMin) / (yMax - yMin)
 
-4. Layout and Scaling
-- Set the canvas to width="600" and height="400".
-- Define margins/padding: at least 40px on all sides.
-- Use the remaining space (after margins) as the plot area for scaling coordinates.
-- Ensure that no points, lines, or labels are clipped.
+4. Return the normalized values as a list of points:
+   - Structure: { x: <normalizedX>, y: <normalizedY> }
 
-5. Text and Styling
-- Use font-size 10–12px for tick labels and axis labels.
-- The regression formula text should be clearly visible and styled in red.
-
-6. Output Rules
-- Output only the raw <svg>...</svg> element.
-- Do not include any markdown, HTML wrappers, code comments, or explanations.
-
-The result must be mathematically accurate, cleanly labeled, and visually balanced. Output only a single self-contained <svg> element.
-`.trim();
-
-  console.log("🚀 Diagram Data Rows:", rows);
+### Example Response Format:
+json
+{
+  "slope": 1.23,
+  "intercept": 45.6,
+  "formula": "y = 1.23x + 45.6",
+  "xMin": 78,
+  "xMax": 129,
+  "yMin": 1185.99,
+  "yMax": 1863.69,
+  "normalizedPoints": [
+    { "x": 0.0, "y": 0.0 },
+    { "x": 0.5, "y": 0.75 },
+    { "x": 1.0, "y": 1.0 }
+  ]
+}
+  `.trim();
+  
     const finalQuery = Query || defaultPrompt;
     const token = await getToken();
     const response = await doDiagramQuery(token, finalQuery, jsonData);
-
-    console.log("🤖 AI raw response:", JSON.stringify(response, null, 2));
-
-    let svg = response?.choices?.[0]?.message?.content || "<p>AI failed to generate chart.</p>";
-    if (svg.startsWith("```")) {
-      svg = svg.replace(/```(?:html|svg)?/g, "").trim();
+  
+    const raw = response?.choices?.[0]?.message?.content;
+    if (!raw) return "<p>AI did not return a result.</p>";
+  
+    let json;
+    try {
+      json = JSON.parse(raw.replace(/```json|```/g, "").trim());
+    } catch (err) {
+      console.error("❌ Failed to parse AI JSON:", raw);
+      return "<p>AI returned invalid data.</p>";
     }
+  
+    console.log(json)
 
-    console.log("📈 Generated SVG for:", xField, yField);
+    const svg = renderSVG(json, xField, yField);
     return svg;
-  }
-};
+  }};
 
 
 function getSuggestedCorrelationsMessage() {
@@ -150,51 +154,66 @@ to visualize a regresssion line on the scatter plot of two variables
 }
 
 
-function renderSVG({ slope, intercept, xMin, xMax, yMin, yMax, normalizedPoints }) {
+function renderSVG({ slope, intercept, xMin, xMax, yMin, yMax, normalizedPoints }, xLabel, yLabel) {
   const width = 600;
   const height = 400;
   const margin = 40;
-  const plotWidth = width - margin * 2;
-  const plotHeight = height - margin * 2;
+  const plotWidth = width - 2 * margin;
+  const plotHeight = height - 2 * margin;
 
-  // Map normalized data points to pixel coordinates
-  const pointsSVG = normalizedPoints.map(p => {
+  // Filter out invalid (0, 0) point
+  const points = normalizedPoints.filter(p => !(p.x === 0 && p.y === 0));
+
+  const pointsSVG = points.map(p => {
     const cx = margin + p.x * plotWidth;
-    const cy = margin + (1 - p.y) * plotHeight; // flip y-axis
+    const cy = margin + (1 - p.y) * plotHeight;
     return `<circle cx="${cx}" cy="${cy}" r="5" fill="blue" />`;
   }).join('\n');
 
-  // Compute regression line endpoints using min and max X values
-  const x1 = xMin;
-  const x2 = xMax;
-  const y1 = slope * x1 + intercept;
-  const y2 = slope * x2 + intercept;
-
-  // Normalize regression points
-  const normX1 = (x1 - xMin) / (xMax - xMin);
-  const normX2 = (x2 - xMin) / (xMax - xMin);
-  const normY1 = (y1 - yMin) / (yMax - yMin);
-  const normY2 = (y2 - yMin) / (yMax - yMin);
-
-  const x1p = margin + normX1 * plotWidth;
-  const x2p = margin + normX2 * plotWidth;
+  // Regression line
+  const normY1 = (slope * xMin + intercept - yMin) / (yMax - yMin);
+  const normY2 = (slope * xMax + intercept - yMin) / (yMax - yMin);
+  const x1p = margin;
+  const x2p = margin + plotWidth;
   const y1p = margin + (1 - normY1) * plotHeight;
   const y2p = margin + (1 - normY2) * plotHeight;
 
   const regressionLine = `<line x1="${x1p}" y1="${y1p}" x2="${x2p}" y2="${y2p}" stroke="red" />`;
   const formulaText = `<text x="${width - margin - 10}" y="${margin + 10}" text-anchor="end" font-size="12" fill="red">y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}</text>`;
 
-  // Axes
+  // Tick generation (5 ticks per axis)
+  function ticks(min, max, count = 5) {
+    const step = (max - min) / (count - 1);
+    return Array.from({ length: count }, (_, i) => min + i * step);
+  }
+
+  const xTicks = ticks(xMin, xMax);
+  const yTicks = ticks(yMin, yMax);
+
+  const xTickLabels = xTicks.map(tick => {
+    const x = margin + ((tick - xMin) / (xMax - xMin)) * plotWidth;
+    return `<text x="${x}" y="${margin + plotHeight + 15}" text-anchor="middle" font-size="10">${tick.toFixed(0)}</text>`;
+  }).join('\n');
+
+  const yTickLabels = yTicks.map(tick => {
+    const y = margin + (1 - (tick - yMin) / (yMax - yMin)) * plotHeight;
+    return `<text x="${margin - 5}" y="${y + 3}" text-anchor="end" font-size="10">${tick.toFixed(0)}</text>`;
+  }).join('\n');
+
+  // Axis lines and labels
   const axes = `
     <line x1="${margin}" y1="${margin + plotHeight}" x2="${margin + plotWidth}" y2="${margin + plotHeight}" stroke="black" />
     <line x1="${margin}" y1="${margin}" x2="${margin}" y2="${margin + plotHeight}" stroke="black" />
-    <text x="${width / 2}" y="${height - 5}" text-anchor="middle">${'X Axis'}</text>
-    <text x="15" y="${height / 2}" text-anchor="middle" transform="rotate(-90, 15, ${height / 2})">${'Y Axis'}</text>
+
+    <text x="${margin + plotWidth / 2}" y="${height - 5}" text-anchor="middle" font-size="12">${xLabel}</text>
+    <text x="10" y="${margin + plotHeight / 2}" text-anchor="middle" font-size="12" transform="rotate(-90, 10, ${margin + plotHeight / 2})">${yLabel}</text>
   `;
 
   return `
 <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
   ${axes}
+  ${xTickLabels}
+  ${yTickLabels}
   ${pointsSVG}
   ${regressionLine}
   ${formulaText}
