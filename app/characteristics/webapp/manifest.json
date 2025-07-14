@@ -89,10 +89,14 @@
       }
     },
     "resources": {
+      "preload": "off",
       "css": []
     },
     "routing": {
-      "config": {},
+      "config": {
+
+        "async": true
+      },
       "routes": [
         {
           "pattern": ":?query:",

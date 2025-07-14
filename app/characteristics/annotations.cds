@@ -22,9 +22,14 @@ annotate service.characteristics with @Aggregation.ApplySupported  : {
         {Property: VehicleCost},  
         { Property: ConstraintCount },
         { Property: AvgConstraintsPerCustomer },
-        { Property: TotalDistance },
+       
         { Property: AvgWeightUsage },
-        { Property: AvgVolumeUsage }
+        { Property: AvgVolumeUsage },
+        { Property: MaxCustomerDistanceKM },
+        { Property: VehicleCapacityKG },
+        { Property: VehicleVolumeM3 },
+        { Property: avg_customer_spread },
+        { Property: avg_customer_spread_time },
                  
       
       
@@ -36,15 +41,20 @@ annotate service.characteristics with @Aggregation.ApplySupported  : {
 annotate service.characteristics with {
 
   SumWeight @Measures.Unit : 'kg';                   
-  SumVolume @Measures.Unit : 'm³';                   
+  SumVolume @Measures.Unit : '';                   
   AverageServiceTime @Measures.Unit : 'min';                                        
   ActiveTime @Measures.Unit : 'min';                 
   DeliveryTime @Measures.Unit : 'min';              
   DrivingTime @Measures.Unit : 'min';              
   VehicleCost @Measures.Unit : '€/km';                                      
-  TotalDistance @Measures.Unit : 'km';               
+               
   AvgWeightUsage @Measures.Unit : '%';               
-  AvgVolumeUsage @Measures.Unit : '%';               
+  AvgVolumeUsage @Measures.Unit : '%';        
+  MaxCustomerDistanceKM @Measures.Unit : 'km';
+  VehicleCapacityKG @Measures.Unit : 'kg'; 
+  avg_customer_spread @Measures.Unit : 'kg';   
+  avg_customer_spread_time @Measures.Unit : 'min';  
+  VehicleVolumeM3 @Measures.Unit : 'm³'
 
 };
 
@@ -146,13 +156,6 @@ Analytics.AggregatedProperty #AvgConstraintsPerCustomer : {
     ![@Common.Label]: '{i18n>Avg. Constraints per Customer}'
 },
 
-Analytics.AggregatedProperty #TotalDistance : {
-    $Type: 'Analytics.AggregatedPropertyType',
-    Name: 'TotalDistance',
-    AggregatableProperty: TotalDistance,
-    AggregationMethod: 'none',
-    ![@Common.Label]: '{i18n>Total Route Distance (km)}'
-},
 
 Analytics.AggregatedProperty #AvgWeightUsage : {
     $Type: 'Analytics.AggregatedPropertyType',
@@ -168,6 +171,44 @@ Analytics.AggregatedProperty #AvgVolumeUsage : {
     AggregatableProperty: AvgVolumeUsage,
     AggregationMethod: 'average',
     ![@Common.Label]: '{i18n>Avg. Volume Usage (%)}'
+},
+ 
+ Analytics.AggregatedProperty #MaxCustomerDistance : {
+    $Type: 'Analytics.AggregatedPropertyType',
+    Name: 'MaxCustomerDistance',
+    AggregatableProperty: MaxCustomerDistanceKM,
+    AggregationMethod: 'max',
+    ![@Common.Label]: 'Max Distance of Customer to Depot (km)'
+},
+
+Analytics.AggregatedProperty #VehicleCapacityKG : {
+    $Type: 'Analytics.AggregatedPropertyType',
+    Name: 'VehicleWeightCapacity',
+    AggregatableProperty: VehicleCapacityKG,
+    AggregationMethod: 'sum',
+    ![@Common.Label]: 'Total Vehicle Weight Capacity (kg)'
+},
+
+Analytics.AggregatedProperty #VehicleVolumeM3 : {
+    $Type: 'Analytics.AggregatedPropertyType',
+    Name: 'VehicleVolumeCapacity',
+    AggregatableProperty: VehicleVolumeM3,
+    AggregationMethod: 'sum',
+    ![@Common.Label]: 'Total Vehicle Volume Capacity (m³)'
+},
+Analytics.AggregatedProperty #avg_customer_spread : {
+    $Type: 'Analytics.AggregatedPropertyType',
+    Name: 'CustomerSpread',
+    AggregatableProperty: avg_customer_spread,
+    AggregationMethod: 'average',
+    ![@Common.Label]: 'Customer Spread (avg Dist between Customers) (km)'
+},
+Analytics.AggregatedProperty #avg_customer_spread_time : {
+    $Type: 'Analytics.AggregatedPropertyType',
+    Name: 'CustomerSpread_time',
+    AggregatableProperty: avg_customer_spread_time,
+    AggregationMethod: 'average',
+    ![@Common.Label]: 'Customer Spread (avg Time Distance between Customers) (min)'
 }
 
 
@@ -190,12 +231,29 @@ annotate service.characteristics with
       $Type: 'UI.ReferenceFacet',
       Label: 'Constraint Statistics',
       Target: '@UI.FieldGroup#ConstraintStats'
-    }
+    },
+      {
+    $Type: 'UI.ReferenceFacet',
+    Label: 'Spread Analysis',
+    Target: '@UI.FieldGroup#SpreadAnalysis'
+    },
     
     
     
     
     ];
+
+
+annotate service.characteristics with @UI.FieldGroup#SpreadAnalysis : {
+  Data: [
+    { Value: Route, Label: 'Route ID' },
+    { Value: MaxCustomerDistanceKM, Label: 'Max Distance of Customer to Depot (km)' },
+    { Value: VehicleCapacityKG, Label: 'Total Weight Capacity of Vehicles (kg)' },
+    { Value: VehicleVolumeM3, Label: 'Total Volume Capacity of Vehicles (m³)' },
+    { Value: avg_customer_spread, Label: 'Average Distance between Customers (km)' },
+    { Value: avg_customer_spread_time, Label: 'Average Time Distance between Customers (km)' }
+  ]
+};
 
 annotate service.characteristics with  @UI.FieldGroup#VehicleStats: { Data: [
     {Value: DrivingTime, Label: 'Driving Time'},
@@ -231,15 +289,24 @@ annotate service.characteristics with  @UI.FieldGroup#ConstraintStats: { Data: [
 
  annotate service.characteristics with @UI.PresentationVariant#MainChartView: {
   Visualizations: ['@UI.Chart#MainChart', '@UI.LineItem'],
-  RequestAtLeast: [ CustomerNumber, TotalDistance]
+  RequestAtLeast: [ CustomerNumber, DeliveryTime]
 };
 
  annotate service.characteristics with @UI.LineItem: [
+    
+      {
+            $Type : 'UI.DataFieldForAction',
+            Action : 'scenariocharacteristics.EntityContainer/showCorrelations',
+            Label : '{i18n>What to Explore?}'
+        },
+    
     {
             $Type : 'UI.DataFieldForAction',
             Action : 'scenariocharacteristics.EntityContainer/checkAI',
             Label : '{i18n>Evaluate_AI}'
         },
+
+
     { Value: Route, Label: 'Route' },
   { Value: CustomerNumber, Label: 'Customer Count' },
   { Value: AverageServiceTime, Label: 'Avg Service Time ' },
@@ -249,7 +316,7 @@ annotate service.characteristics with  @UI.FieldGroup#ConstraintStats: { Data: [
   { Value: ActiveTime, Label: 'Active Time ' },
   { Value: VehicleCost, Label: 'Vehicle Cost ' },
   
-  { Value: TotalDistance, Label: 'Total Distance ' },
+
 ];
  
 

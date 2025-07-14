@@ -25,7 +25,17 @@ sap.ui.define([
         { name: "DrivingTime", label: "Driving Time" },
         { name: "DeliveryTime", label: "Delivery Time" },
         { name: "ActiveTime", label: "Active Time" },
-        { name: "VehicleCost", label: "Vehicle Cost" }
+        { name: "VehicleCost", label: "Vehicle Cost" },
+        { name: "ConstraintCount", label: "Constraint Count" },
+        { name: "AvgConstraintsPerCustomer", label: "Avg Constraints per Customer" },
+        { name: "AvgWeightUsage", label: "Avg Weight Usage" },
+        { name: "AvgVolumeUsage", label: "Avg Volume Usage" },
+        { name: "MaxCustomerDistanceKM", label: "Max Customer Distance (km)" },
+        { name: "VehicleCapacityKG", label: "Vehicle Capacity (kg)" },
+        { name: "VehicleVolumeM3", label: "Vehicle Volume (m³)" },
+        { name: "avg_customer_spread", label: "Avg Geographical Spread" },
+        { name: "avg_customer_spread_time", label: "Avg Spread Time (min)" },
+        { name: "avg_depot_distance", label: "Avg Depot-Customer Distance (km)" }
       ];
 
       const model = new JSONModel({ fields });

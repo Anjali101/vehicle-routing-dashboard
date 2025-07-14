@@ -145,7 +145,7 @@ service RouteClassification{
 
 
 
-entity CustomerArticleSummary as select from my.Customer left join my.RouteDistances on Customer.route_id = RouteDistances.route_id  {
+entity CustomerArticleSummary as select from my.Customer left join my.CustomerDistance on Customer.route_id = CustomerDistance.route_id {
 
 
        @Common.ValueList : {
@@ -222,21 +222,78 @@ end as AverageServiceStars: Integer,
 
      cast(169.82 as Decimal(5,2)) as ReferenceValueVehicleCost,
      cast(40.18 as Decimal(5,2)) as ReferenceValueConstraintLevel,
+     cast(40.18 as Decimal(5,2)) as ReferenceValueCustDIst,
 
 
-    RouteDistances.total_distance_km as TotalDistance: Decimal(10, 3),
+    round(avg(CASE WHEN CustomerDistance.distance_km != 0 THEN CustomerDistance.distance_km ELSE NULL END),3) AS avg_customer_spread: Decimal,
     cast(3385.376 as Decimal(5,2)) as ReferenceValueDist,
 
 case
-  when total_distance_km is null then 0
-  when total_distance_km <= 1951.000 then 5
-  when total_distance_km <= 2474.000 then 4
-  when total_distance_km <= 4431.000 then 3
-  when total_distance_km <= 5361.000 then 2
-  else 1
-end as route_distance_stars: Integer
+  when avg(
+         case 
+           when  CustomerDistance.distance_km != 0.0 
+           then CustomerDistance.distance_km 
+           else null 
+         end
+       ) is null
+       or avg(
+         case 
+           when CustomerDistance.distance_km  != 0.0  
+           then CustomerDistance.distance_km
+         end
+       ) = 0
+    then 'NO DATA AVAILABLE'
+  when avg(
+         case 
+           when CustomerDistance.distance_km != 0.0 
+           then CustomerDistance.distance_km
+         end
+       ) <= 40
+    then 'High'
+  when avg(
+         case 
+           when CustomerDistance.distance_km != 0.0 
+           then CustomerDistance.distance_km
+         end
+       ) <= 55
+    then 'Medium'
+  else 'Low'
+end as RouteDistance_Label: String,
 
-} group by Customer.route_id, total_distance_km ;
+
+case
+  when avg(
+         case 
+           when CustomerDistance.distance_km != 0.0 
+           then CustomerDistance.distance_km 
+           else null 
+         end
+       ) is null
+       or avg(
+         case 
+           when CustomerDistance.distance_km != 0.0 
+           then CustomerDistance.distance_km
+         end
+       ) = 0
+    then null
+  when avg(
+         case 
+           when CustomerDistance.distance_km != 0.0  
+           then CustomerDistance.distance_km
+         end
+       ) <= 40
+    then 1
+  when avg(
+         case 
+           when CustomerDistance.distance_km != 0.0 
+           then CustomerDistance.distance_km
+         end
+       ) <= 55
+    then 2
+  else 3
+end as RouteDistance_Criticality: Integer,
+
+} group by Customer.route_id ;
 
 
 entity constraintcount as select from my.Constraints {
@@ -311,11 +368,25 @@ Customer.route_id = Vehicle.route_id {
 }
 
 service scenariocharacteristics {
+    entity SpreadVehicleAnalysis as select from my.Vehicle {
+    key route_id as Route,
+    sum(vehicle_total_weight_kg) as VehicleCapacityKG: Decimal(10,2),
+    sum(vehicle_total_volume_m3) as VehicleVolumeM3: Decimal(10,2)
+  } group by route_id;
 
     entity characteristics as select from my.Customer
     left join my.Vehicle on Customer.route_id = Vehicle.route_id
-    left join my.RouteDistances on Customer.route_id = RouteDistances.route_id
+    left join my.Depots as Depot on Customer.route_id = Depot.route_id
+    left join my.DepotDistance as Dist 
+        on Customer.route_id = Dist.route_id 
+        and Customer.customer_code = Dist.customer_code
+    left join my.Spread as Spread on Customer.route_id = Spread.route_id
+    left join SpreadVehicleAnalysis as VehicleAgg 
+        on Customer.route_id = VehicleAgg.Route
     join my.Constraints on Customer.route_id = Constraints.route_id
+   
+
+
 {
     key Customer.route_id as Route,
     count(distinct Customer.customer_code) as CustomerNumber: Integer,
@@ -323,7 +394,6 @@ service scenariocharacteristics {
     round(sum(Customer.total_volume_m3), 3) as SumVolume: Decimal,
     round(avg(Customer.customer_time_window_to_min - Customer.customer_time_window_from_min), 3) as AverageServiceTime: Decimal,
     sum(Customer.number_of_articles) as SumArticles: Integer,
-    RouteDistances.total_distance_km as TotalDistance,
     round(avg( case when weightusage != 0 then weightusage end ), 2) as AvgWeightUsage: Decimal(5,2),
     round(avg(case when volumeusage != 0 then volumeusage end), 2) as AvgVolumeUsage: Decimal(5,2),
 
@@ -333,6 +403,19 @@ service scenariocharacteristics {
     round(sum(distinct Vehicle.result_vehicle_final_cost_km),3) as VehicleCost: Decimal,
 
     count (distinct(Constraints.ID)) as ConstraintCount: Integer,
+
+    AVGCustomerDistanceKM AS avg_customer_spread: Decimal,
+    AVGCustomerTimeMin AS avg_customer_spread_time: Decimal,
+    AvgDepotCustomerDistanceKM AS avg_depot_distance: Decimal,
+
+ 
+    max(Dist.distance_km) as MaxCustomerDistanceKM : Decimal(10,2),
+    VehicleAgg.VehicleCapacityKG,
+    VehicleAgg.VehicleVolumeM3,
+
+
+
+
 
 
     round(count(distinct(Constraints.ID)) * 1.0 / nullif(count(distinct Constraints.sdvrp_constraint_customer_code), 0), 2) as AvgConstraintsPerCustomer: Decimal(5,2)
@@ -346,6 +429,7 @@ service scenariocharacteristics {
 } group by Customer.route_id;
 
     action checkAI (Query: String) ;
+    action showCorrelations();
     function diagram(xField: String, yField: String, Query: String) returns LargeString;
 
 
@@ -364,13 +448,7 @@ service scenariocharacteristics {
 
     }group by route_id;
 
-    entity total_distance_km as select from my.RouteDistances{
-
-        key route_id as Route,
-        total_distance_km as TotalDistance
-
-
-    } group by route_id;
+  
     entity utilization as select from my.Vehicle {
 
        key ID as ID,

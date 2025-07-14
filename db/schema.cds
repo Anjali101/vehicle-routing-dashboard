@@ -102,10 +102,13 @@ entity Routes as select from Route {
 }
 
 
-entity RouteDistances: cuid  {
+entity Spread: cuid  {
     key ID: UUID;
    route_id: String;
-  total_distance_km: Decimal(10, 3);
+  AVGCustomerDistanceKM: Decimal(10, 3);
+  AVGCustomerTimeMin: Decimal(10, 3);
+  AvgDepotCustomerDistanceKM: Decimal(10, 3);
+
 }
 
 

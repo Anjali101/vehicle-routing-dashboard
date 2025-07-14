@@ -8,6 +8,8 @@ annotate service.CustomerArticleSummary with @UI.LineItem: [
     {Value: Route, Label: 'Route', @UI.Importance : #High,},
     {Value: CustomerKPI_Label, Label: 'CustomerLoad', @UI.Importance : #High, Criticality: CustomerKPI},
     {Value: constraintlevel.ConstraintLevel, Label: 'Constraint Level ', @UI.Importance : #High},
+    {Value: RouteDistance_Label, Label: 'Customer Spread ', @UI.Importance : #High, Criticality: RouteDistance_Criticality},
+
     {
         $Type : 'UI.DataFieldForAnnotation',
         Label : 'Customer Availability',
@@ -21,12 +23,7 @@ annotate service.CustomerArticleSummary with @UI.LineItem: [
         Target : '@UI.DataPoint#VehicleRating',
         ![@HTML5.CssDefaults] : {width : '20rem'}
     },
-    {
-        $Type : 'UI.DataFieldForAnnotation',
-        Label : 'Route Distance',
-        Target : '@UI.DataPoint#RouteDistance',
-        ![@HTML5.CssDefaults] : {width : '20rem'}
-    },
+    
 
   
  
@@ -169,14 +166,10 @@ annotate service.CustomerArticleSummary with @UI.FieldGroup #VehicleCost: {
 
 annotate service.CustomerArticleSummary with @UI.FieldGroup #RouteDist: {
   Data: [
-    {
-      $Type: 'UI.DataFieldForAnnotation',
-      Label: 'RouteDistance',
-      Target: '@UI.DataPoint#RouteDistance'
-    },
-    { Label: 'Description', Value: 'The total Distance driven on the Route'},
-    { Value: TotalDistance, Label: 'Total Route Distance (km) '},
-    { Value: ReferenceValueDist, Label: 'Reference Value (Average across all Routes)', @UI.Importance : #High}
+    { Value: RouteDistance_Label, Label: 'Customer Spread', @UI.Importance : #High, Criticality: RouteDistance_Criticality},
+    { Label: 'Description', Value: 'Average Distance between Customers'},
+    { Value: avg_customer_spread, Label: 'Customer Distance (km) ', },
+    { Value: ReferenceValueCustDIst, Label: 'Reference Value (Average across all Routes)', @UI.Importance : #High}
 
   ]
 };
@@ -203,20 +196,6 @@ annotate service.CustomerArticleSummary with @(
   UI.DataPoint #VehicleRating: {
 
     Value: routecost.VehicleCostStars,
-    TargetValue: 5,
-    Visualization: #Rating
-
-
-  }
-  
-);
-
-
-annotate service.CustomerArticleSummary with @(
-  
-  UI.DataPoint #RouteDistance: {
-
-    Value: route_distance_stars,
     TargetValue: 5,
     Visualization: #Rating
 
