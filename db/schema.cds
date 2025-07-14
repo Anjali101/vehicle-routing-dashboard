@@ -120,3 +120,8 @@ entity CustomerLoadValues {
     key Value: String;
     Label: String;
 }
+
+entity RouteReasons : cuid {
+    key route_id : String;
+    reason : String;
+}

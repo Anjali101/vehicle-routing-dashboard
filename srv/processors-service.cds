@@ -1,3 +1,4 @@
+
 using { sap.capire.vrp as my } from '../db/schema';
 
 service Visualization {
@@ -312,6 +313,7 @@ Customer.route_id = Vehicle.route_id {
 }
 
 service scenariocharacteristics {
+    
     entity SpreadVehicleAnalysis as select from my.Vehicle {
     key route_id as Route,
     sum(vehicle_total_weight_kg) as VehicleCapacityKG: Decimal(10,2),
@@ -397,11 +399,23 @@ service scenariocharacteristics {
 
     } group by route_id;
 
+    entity ScenarioInsights as select from my.Customer
+left join my.Constraints on Customer.route_id = Constraints.route_id
+left join my.RouteReasons as Reasons on Customer.route_id = Reasons.route_id
+{
+  key Customer.route_id as Route,
+  count(distinct Customer.customer_code) as CustomerCount: Integer,
+  round(avg(Customer.customer_time_window_to_min - Customer.customer_time_window_from_min), 2) as AverageServiceTime: Decimal(10,2),
+  count(distinct Constraints.ID) as ConstraintCount: Integer,
+  Reasons.reason as Reason : String
+}
+group by Customer.route_id, Reasons.reason;
 
-
+entity RouteReasons {
+  key route_id : String;
+  reason    : String;
+}
 
 
 }
 
-
-    

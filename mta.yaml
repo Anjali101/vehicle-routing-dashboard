@@ -48,6 +48,10 @@ modules:
       - characteristics.zip
       name: characteristics
       target-path: resources/
+    - artifacts:
+      - insights.zip
+      name: insights
+      target-path: resources/
 - name: classification
   type: html5
   path: app/classification
@@ -101,6 +105,16 @@ modules:
 - name: characteristics
   type: html5
   path: app/characteristics
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: insights
+  type: html5
+  path: app/insights
   build-parameters:
     build-result: dist
     builder: custom
