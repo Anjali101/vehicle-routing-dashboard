@@ -3,7 +3,7 @@ using scenariocharacteristics as service from '../../srv/processors-service';
 
 
 
-
+annotate service.characteristics with @UI.SelectionFields  : [Route];
 
 annotate service.characteristics with @Aggregation.ApplySupported  : {
     Transformations : ['aggregate', 'groupby'],

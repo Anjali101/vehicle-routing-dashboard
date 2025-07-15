@@ -113,18 +113,34 @@ annotate service.Routelocations with {
 
 };
 
+
+annotate service.Routelocations with {
+
+  SumWeight @Measures.Unit : 'kg';                   
+  SumVolume @Measures.Unit : 'm³';                   
+  AverageServiceTime @Measures.Unit : 'min'; 
+  VehicleCostEfficiency @Measures.Unit: '€/km'                                    
+                                     
+               
+  
+
+};
+
+
+
+
 annotate service.Routelocations with @Capabilities.SearchRestrictions.Searchable: false;
 annotate service.Routelocations with 
   @UI.LineItem: [
-    { Value: Route, @UI.Importance: #High },
+    { Value: Route, @UI.Importance: #High,  },
     { Value: RouteDate, @UI.Importance: #High },
-    { Value: TotalCustomers, @UI.Importance: #High },
-    { Value: AverageServiceTime, @UI.Importance: #High },
+    { Value: TotalCustomers, @UI.Importance: #High,![@HTML5.CssDefaults] : {width : '15rem' } },
+    { Value: AverageServiceTime, @UI.Importance: #High, ![@HTML5.CssDefaults] : {width : '15rem' } },
     { Value: RouteDate, @UI.Importance: #High },
     { Value: SumArticles, @UI.Importance: #High },
     { Value: SumWeight, @UI.Importance: #High },
     { Value: SumVolume, @UI.Importance: #High },
-    { Value: VehicleCostEfficiency, @UI.Importance: #High },
+    { Value: VehicleCostEfficiency, @UI.Importance: #High, ![@HTML5.CssDefaults] : {width : '15rem' } },
   ];
 
 
@@ -143,12 +159,12 @@ annotate service.Vehicle with @UI.Chart #Dist: {
   { Value: Route, Label: 'Route' },
   { Value: RouteCode, Label: 'Route Code' },
   { Value: RouteDate, Label: 'Route Date' },
-  { Value: TotalCustomers, Label: 'Total Customers' },
-  { Value: SumArticles, Label: 'Total Articles on Route' },
+  { Value: TotalCustomers, Label: 'Total Customers', ![@HTML5.CssDefaults] : {width : '30rem' }},
+  { Value: SumArticles, Label: 'Total Articles on Route', },
   { Value: SumWeight, Label: ' Total Package Weight (kg)' },
   { Value: SumVolume, Label: 'Total Package Volume (m³)' },
-  { Value: AverageServiceTime, Label: 'Average Service Time (min)' },
-  { Value: VehicleCostEfficiency, Label: 'Total Vehicle Route Cost (€/km)' },
+  { Value: AverageServiceTime, Label: 'Average Service Time (min)',![@HTML5.CssDefaults] : {width : '30rem' } },
+  { Value: VehicleCostEfficiency, Label: 'Total Vehicle Route Cost (€/km)', ![@HTML5.CssDefaults] : {width : '30rem' } },
   {Value: to_averages.AvgWeightUsage, Label: ' Average Weight Usage (%)'},
   {Value: to_averages.AvgVolumeUsage, Label: ' Average Volume Usage (%)'}
   

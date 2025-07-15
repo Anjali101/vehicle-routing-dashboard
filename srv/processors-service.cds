@@ -196,7 +196,7 @@ case
 end as AverageServiceStars: Integer,
 
     count(distinct customer_code) as CustomerNumber: Integer,
-    cast(105.27 as Decimal(5,2)) as ReferenceValue,  // <-- Add this field
+    cast(105.27 as Decimal(5,2)) as ReferenceValue,  
 
     case 
 
@@ -413,13 +413,10 @@ service scenariocharacteristics {
     VehicleAgg.VehicleCapacityKG,
     VehicleAgg.VehicleVolumeM3,
 
+    round(count(distinct(Constraints.ID)) * 1.0 / nullif(count(distinct Constraints.sdvrp_constraint_customer_code), 0), 2) as AvgConstraintsPerCustomer: Decimal(5,2),
 
 
-
-
-
-    round(count(distinct(Constraints.ID)) * 1.0 / nullif(count(distinct Constraints.sdvrp_constraint_customer_code), 0), 2) as AvgConstraintsPerCustomer: Decimal(5,2)
-
+  
 
 
 
@@ -434,34 +431,109 @@ service scenariocharacteristics {
 
 
 
-    entity constraintcomplexity as select from my.Constraints {
-
-        key ID as ID,
-        key route_id as Route,
-
-        count (distinct(Constraints.ID)) as ConstraintCount: Integer,
-
-          count(distinct(Constraints.ID)) as TotalConstraints: Integer,
-         count(distinct Constraints.sdvrp_constraint_customer_code) as TotalCustomers: Integer,
-        round(count(distinct(Constraints.ID)) * 1.0 / nullif(count(distinct Constraints.sdvrp_constraint_customer_code), 0), 2) as AvgConstraintsPerCustomer: Decimal(5,2)
-
-
-    }group by route_id;
-
-  
-    entity utilization as select from my.Vehicle {
-
-       key ID as ID,
-       key route_id as Route,
-      
-
-    } group by route_id;
-
-
 
 
 
 }
+
+
+service insights {
+
+   entity SpreadVehicleAnalysis as select from my.Vehicle {
+    key route_id as Route,
+    sum(vehicle_total_weight_kg) as VehicleCapacityKG: Decimal(10,2),
+    sum(vehicle_total_volume_m3) as VehicleVolumeM3: Decimal(10,2)
+  } group by route_id;
+
+    entity ScenarioInsights as select from my.Customer
+  left join my.Vehicle on Customer.route_id = Vehicle.route_id
+    left join my.Depots as Depot on Customer.route_id = Depot.route_id
+    left join my.DepotDistance as Dist 
+        on Customer.route_id = Dist.route_id 
+        and Customer.customer_code = Dist.customer_code
+    left join my.Spread as Spread on Customer.route_id = Spread.route_id
+    left join SpreadVehicleAnalysis as VehicleAgg 
+        on Customer.route_id = VehicleAgg.Route
+    join my.Constraints on Customer.route_id = Constraints.route_id
+left join my.RouteReasons as Reasons on Customer.route_id = Reasons.route_id
+{
+  key Customer.route_id as Route,
+  count(distinct Customer.customer_code) as CustomerCount: Integer,
+  round(avg(Customer.customer_time_window_to_min - Customer.customer_time_window_from_min), 2) as AverageServiceTime: Decimal(10,2),
+  count(distinct Constraints.ID) as ConstraintCount: Integer,
+   count(distinct Customer.customer_code) as CustomerNumber: Integer,
+    round(sum(Customer.total_weight_kg), 3) as SumWeight: Decimal,
+    round(sum(Customer.total_volume_m3), 3) as SumVolume: Decimal,
+
+    sum(Customer.number_of_articles) as SumArticles: Integer,
+    round(avg( case when weightusage != 0 then weightusage end ), 2) as AvgWeightUsage: Decimal(5,2),
+    round(avg(case when volumeusage != 0 then volumeusage end), 2) as AvgVolumeUsage: Decimal(5,2),
+
+    round(sum(distinct Vehicle.result_vehicle_total_driving_time_min), 3) as DrivingTime: Decimal,
+    round(sum(distinct Vehicle.result_vehicle_total_delivery_time_min),3) as DeliveryTime: Decimal,
+    round(sum(distinct Vehicle.result_vehicle_total_active_time_min),3) as ActiveTime: Decimal,
+    round(sum(distinct Vehicle.result_vehicle_final_cost_km),3) as VehicleCost: Decimal,
+
+
+    AVGCustomerDistanceKM AS avg_customer_spread: Decimal,
+    AVGCustomerTimeMin AS avg_customer_spread_time: Decimal,
+    AvgDepotCustomerDistanceKM AS avg_depot_distance: Decimal,
+
+ 
+    max(Dist.distance_km) as MaxCustomerDistanceKM : Decimal(10,2),
+    VehicleAgg.VehicleCapacityKG,
+    VehicleAgg.VehicleVolumeM3,
+
+    
+    known_issues as Issues: String,
+
+    data_availability as  Data: String,
+
+    case when data_availability = 0 then 'Data available'
+    else 'Data not available'
+    end as dataclassifier: String,
+
+     case when data_availability = 0 then 3
+    else 1
+    end as datacrit: Integer,
+
+
+    status as ChallengeStatus: Integer,
+    case
+
+        when status = 1 then 'Severe'
+        when status <= 2 then 'Moderate'
+        else 'Minor'
+        end as ChallengeLevel: String,
+
+         case
+
+          when status = 1 then 1
+        when status = 2 then 2
+        else 3
+        end as challengecrit: String,
+
+
+
+    round(count(distinct(Constraints.ID)) * 1.0 / nullif(count(distinct Constraints.sdvrp_constraint_customer_code), 0), 2) as AvgConstraintsPerCustomer: Decimal(5,2),
+
+      cast (487.56 as Decimal (5,2)) as AvgCustAvailability: Decimal,
+      cast(169.82 as Decimal(5,2)) as ReferenceValueVehicleCost: Decimal,
+      cast(40.18 as Decimal(5,2)) as ReferenceValueConstraintLevel: Decimal,
+      cast(40.18 as Decimal(5,2)) as ReferenceValueCustDIst: Decimal,
+      cast(105.27 as Decimal(5,2)) as ReferenceCustCount: Decimal, 
+
+
+  short_description as short_description: String,
+  description as description: String
+
+
+}
+where Customer.route_id in ( '2604001', '2990001', '3005971', '3016355', '3044702' )
+group by Customer.route_id
+
+}
+
 
 
     

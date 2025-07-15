@@ -123,3 +123,13 @@ entity CustomerLoadValues {
     key Value: String;
     Label: String;
 }
+
+
+entity RouteReasons : cuid {
+    key route_id : String;
+    status : Integer;
+    known_issues: String;
+    data_availability: Integer;
+    short_description: String;
+    description: String;
+}
