@@ -93,6 +93,7 @@ Perform the following steps carefully and return only a strict JSON object with 
    - Return slope (m)
    - Return intercept (b)
    - Include the formula: y = mx + b
+   - align the line of the formula with the axis, e.g that the line goes thorugh the point by interpreting the axis and its valeus as a coordinate system and plotting the formula y =mx +b
 
 2. Determine:
    - xMin and xMax (the minimum and maximum values of "${xField}")
@@ -128,24 +129,21 @@ json
     const finalQuery = Query || defaultPrompt;
     const token = await getToken();
     const response = await doDiagramQuery(token, finalQuery, jsonData);
-  
+    
     const raw = response?.choices?.[0]?.message?.content;
     if (!raw) return "<p>AI did not return a result.</p>";
-  
-    const rawBody = await response.text();
-    console.log("AI API raw response:", rawBody);
     
+    // No response.text() needed!
     let json;
     try {
-      const cleaned = rawBody.replace(/```json|```/g, "").trim();
+      const cleaned = raw.replace(/```json|```/g, "").trim();
       json = JSON.parse(cleaned);
     } catch (err) {
-      console.error(" Failed to parse AI JSON:", rawBody);
+      console.error(" Failed to parse AI JSON:", raw);
       return "<p>AI returned invalid data.</p>";
     }
     
     console.log(" Parsed AI JSON:", json);
-
     const svg = renderSVG(json, xField, yField);
     return svg;
   }};
