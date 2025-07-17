@@ -40,12 +40,12 @@ const startTime = Date.now();
 
 
 const afterToken = Date.now();
-console.log("⏱️ Token fetch time:", afterToken - startTime, "ms");
+console.log("⏱ Token fetch time:", afterToken - startTime, "ms");
     const response = await doQuery(token, contextPrompt, csv);
 
     const afterAI = Date.now();
-    console.log("⏱️ AI query time:", afterAI - afterToken, "ms");
-    console.log("⏱️ Total time:", afterAI - startTime, "ms");
+    console.log("⏱ AI query time:", afterAI - afterToken, "ms");
+    console.log("⏱ Total time:", afterAI - startTime, "ms");
 
 
     const message = response?.choices?.[0]?.message?.content || "AI did not return a result.";
@@ -242,7 +242,7 @@ function renderSVG({ slope, intercept, xMin, xMax, yMin, yMax, normalizedPoints 
 }
 
 
-// --- 🔐 SAP AI Core Token Fetch ---
+
 async function getToken() {
   const url = 'https://btplearning-w4kbx4of.authentication.us10.hana.ondemand.com/oauth/token?grant_type=client_credentials&response_type=token';
   const username = process.env.USERNAME;
