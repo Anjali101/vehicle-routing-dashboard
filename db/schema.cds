@@ -20,7 +20,7 @@ entity Customer: cuid {
     customer_longitude: Decimal;
     customer_time_window_from_min: Decimal;
     customer_time_window_to_min: Decimal;
-    number_of_articles: Integer;
+    number_of_articles: Decimal;
     total_weight_kg: Decimal;
     total_volume_m3: Decimal;
     customer_delivery_service_time_min: Decimal;
@@ -103,11 +103,12 @@ entity Routes as select from Route {
 
 
 entity Spread: cuid  {
-    key ID: UUID;
-   route_id: String;
-  AVGCustomerDistanceKM: Decimal(10, 3);
-  AVGCustomerTimeMin: Decimal(10, 3);
-  AvgDepotCustomerDistanceKM: Decimal(10, 3);
+    
+  key ID: UUID; 
+  route_id: String;
+  AVGCustomerDistanceKM: Double;
+  AVGCustomerTimeMin: Double;
+  AvgDepotCustomerDistanceKM: Double;
 
 }
 
@@ -126,7 +127,9 @@ entity CustomerLoadValues {
 
 
 entity RouteReasons : cuid {
-    key route_id : String;
+
+    key ID: UUID;
+    route_id : String;
     status : Integer;
     known_issues: String;
     data_availability: Integer;

@@ -1,0 +1,2 @@
+sap.ui.require(["sap/fe/test/JourneyRunner","vrptest/test/integration/FirstJourney","vrptest/test/integration/pages/RouteAggregatedList","vrptest/test/integration/pages/RouteAggregatedObjectPage"],function(e,t,r,g){"use strict";var e=new e({launchUrl:sap.ui.require.toUrl("vrptest")+"/index.html"});e.run({pages:{onTheRouteAggregatedList:r,onTheRouteAggregatedObjectPage:g}},t.run)});
+//# sourceMappingURL=opaTests.qunit.js.map

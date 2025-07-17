@@ -1,7 +1,7 @@
 {
   "_version": "1.65.0",
   "sap.app": {
-    "id": "insights.insights",
+    "id": "insights",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -15,6 +15,20 @@
       "version": "1.18.2",
       "toolsId": "5ee923fb-20ce-4bc1-a906-d7c15bff2d4c"
     },
+   "crossNavigation": {
+  "inbounds": {
+    "insights-display": {
+      "semanticObject": "insights",
+      "action": "display",
+      "title": "Insights",
+      "signature": {
+        "parameters": {},
+        "additionalParameters": "allowed"
+      }
+    }
+  }
+},
+  
     "dataSources": {
       "mainService": {
         "uri": "/odata/v4/insights/",
@@ -60,7 +74,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "insights.insights.i18n.i18n"
+          "bundleName": "insights.i18n.i18n"
         }
       },
       "": {

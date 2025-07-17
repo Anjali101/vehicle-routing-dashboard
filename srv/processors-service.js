@@ -30,15 +30,31 @@ If possible, include the formula or value you used, but keep the explanation bri
 Question:
 ${userInput}`.trim();
 
+const startTime = Date.now();
+
+
+
+
+
     const token = await getToken();
+
+
+const afterToken = Date.now();
+console.log("⏱️ Token fetch time:", afterToken - startTime, "ms");
     const response = await doQuery(token, contextPrompt, csv);
+
+    const afterAI = Date.now();
+    console.log("⏱️ AI query time:", afterAI - afterToken, "ms");
+    console.log("⏱️ Total time:", afterAI - startTime, "ms");
+
+
     const message = response?.choices?.[0]?.message?.content || "AI did not return a result.";
 
 
 
 
-    console.log("🧠 AI Input:\n", userInput);
-    console.log("📥 AI Output:\n", message);
+    console.log(" AI Input:\n", userInput);
+    console.log(" AI Output:\n", message);
 
     req.info(message)
 
@@ -116,15 +132,19 @@ json
     const raw = response?.choices?.[0]?.message?.content;
     if (!raw) return "<p>AI did not return a result.</p>";
   
+    const rawBody = await response.text();
+    console.log("AI API raw response:", rawBody);
+    
     let json;
     try {
-      json = JSON.parse(raw.replace(/```json|```/g, "").trim());
+      const cleaned = rawBody.replace(/```json|```/g, "").trim();
+      json = JSON.parse(cleaned);
     } catch (err) {
-      console.error("❌ Failed to parse AI JSON:", raw);
+      console.error(" Failed to parse AI JSON:", rawBody);
       return "<p>AI returned invalid data.</p>";
     }
-  
-    console.log(json)
+    
+    console.log(" Parsed AI JSON:", json);
 
     const svg = renderSVG(json, xField, yField);
     return svg;
@@ -242,7 +262,7 @@ async function getToken() {
   return data.access_token;
 }
 
-// --- 🧠 SAP AI Core Diagram Generation ---
+
 async function doDiagramQuery(token, query, inputJson) {
   const url = "https://api.ai.prod.us-east-1.aws.ml.hana.ondemand.com/v2/inference/deployments/d85ed0c1b02d8a27/chat/completions?api-version=2023-05-15";
 
@@ -277,8 +297,8 @@ async function doDiagramQuery(token, query, inputJson) {
   return await response.json();
 }
 
-// --- 🧠 SAP AI Core Data Q&A ---
-async function doQuery(token, query, csvData) {
+
+async function doQuery(token, query, input) {
   const url = "https://api.ai.prod.us-east-1.aws.ml.hana.ondemand.com/v2/inference/deployments/d85ed0c1b02d8a27/chat/completions?api-version=2023-05-15";
 
   const headers = {
@@ -290,16 +310,15 @@ async function doQuery(token, query, csvData) {
   const body = {
     messages: [
       {
-        role: "system",
-        content: "You are a helpful assistant that analyzes CSV data and answers questions."
-      },
-      {
         role: "user",
-        content: `Given the following CSV:\n\n${csvData}\n\n${query}`
+        content: `Given following data in csv format:\n\n${input}\n\n${query}`
       }
     ],
     max_tokens: 1000,
-    temperature: 0.0
+    temperature: 0.0,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    stop: "null"
   };
 
   const response = await fetch(url, {
@@ -308,6 +327,24 @@ async function doQuery(token, query, csvData) {
     body: JSON.stringify(body)
   });
 
-  return await response.json();
-}
+  console.log(response)
+  const contentType = response.headers.get("content-type");
+  const raw = await response.text();
 
+  if (!response.ok) {
+    console.error(" AI API returned HTTP error:", response.status, raw);
+    return { error: `AI API error: ${raw}` };
+  }
+
+  if (!contentType || !contentType.includes("application/json")) {
+    console.error(" Unexpected content type:", contentType);
+    console.error(" Body:", raw);
+    return { error: `AI returned unexpected format: ${raw}` };
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error(" Failed to parse AI JSON:", raw);
+    return { error: "AI returned invalid JSON" };
+  }}

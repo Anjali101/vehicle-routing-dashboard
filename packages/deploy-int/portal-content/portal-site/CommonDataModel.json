@@ -36,7 +36,17 @@
             "id": "vrptest.display",
             "appId": "vrptest",
             "vizId": "vrptest-display"
-          }
+          },
+		  {
+			"id": "insights.display",
+			"appId": "insights",
+			"vizId": "insights-display"
+		  },
+		  {
+			"id": "characteristics.display",
+			"appId": "characteristics",
+			"vizId": "characteristics-display"
+		  }
         ]
 			}
 		}],

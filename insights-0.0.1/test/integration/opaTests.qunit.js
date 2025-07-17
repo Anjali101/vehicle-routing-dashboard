@@ -1,0 +1,2 @@
+sap.ui.require(["sap/fe/test/JourneyRunner","insights/insights/test/integration/FirstJourney","insights/insights/test/integration/pages/ScenarioInsightsList","insights/insights/test/integration/pages/ScenarioInsightsObjectPage"],function(i,s,t,n){"use strict";var i=new i({launchUrl:sap.ui.require.toUrl("insights/insights")+"/index.html"});i.run({pages:{onTheScenarioInsightsList:t,onTheScenarioInsightsObjectPage:n}},s.run)});
+//# sourceMappingURL=opaTests.qunit.js.map

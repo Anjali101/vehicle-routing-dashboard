@@ -24,7 +24,20 @@
           "odataVersion": "4.0"
         }
       }
+    },
+    "crossNavigation": {
+  "inbounds": {
+    "characteristics-display": {
+      "semanticObject": "characteristics",
+      "action": "display",
+      "title": "Characteristics",
+      "signature": {
+        "parameters": {},
+        "additionalParameters": "allowed"
+      }
     }
+  }
+}
   },
   "sap.ui": {
     "technology": "UI5",

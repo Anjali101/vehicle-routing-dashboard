@@ -1,0 +1,2 @@
+sap.ui.require(["sap/fe/test/JourneyRunner","characteristics/test/integration/FirstJourney","characteristics/test/integration/pages/characteristicsList","characteristics/test/integration/pages/characteristicsObjectPage"],function(t,e,r,i){"use strict";var t=new t({launchUrl:sap.ui.require.toUrl("characteristics")+"/index.html"});t.run({pages:{onThecharacteristicsList:r,onThecharacteristicsObjectPage:i}},e.run)});
+//# sourceMappingURL=opaTests.qunit.js.map

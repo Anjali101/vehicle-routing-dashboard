@@ -128,7 +128,7 @@ annotate service.CustomerArticleSummary with @UI.FieldGroup #ConstraintLevel: {
   Data: [
     { Value: constraintlevel.ConstraintLevel, Label: 'Constraint Level ' },
     { Label: 'Description', Value: 'Classifies the Route based on the amount of Constraints in Comparison to other Routes ',@UI.Importance : #High,},
-    { Value: constraintlevel.ConstraintSum, Label: 'Amount of Constraints' ,@UI.Importance : #High, },
+    { Value: constraintlevel.ConstraintSum, Label: 'Amount of Constraints' ,@UI.Importance : #High},
     {Value: ReferenceValueConstraintLevel , Label: 'Reference Value (Average across Routes)', @UI.Importance : #High,},
   ]
 };

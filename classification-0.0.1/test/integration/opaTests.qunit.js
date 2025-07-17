@@ -1,0 +1,2 @@
+sap.ui.require(["sap/fe/test/JourneyRunner","classification/test/integration/FirstJourney","classification/test/integration/pages/CustomerArticleSummaryList","classification/test/integration/pages/CustomerArticleSummaryObjectPage"],function(t,e,i,r){"use strict";var t=new t({launchUrl:sap.ui.require.toUrl("classification")+"/index.html"});t.run({pages:{onTheCustomerArticleSummaryList:i,onTheCustomerArticleSummaryObjectPage:r}},e.run)});
+//# sourceMappingURL=opaTests.qunit.js.map

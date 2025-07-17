@@ -1,0 +1,2 @@
+sap.ui.define(["sap/fe/test/ListReport"],function(t){"use strict";var s={actions:{},assertions:{}};return new t({appId:"insights",componentId:"ScenarioInsightsList",contextPath:"/ScenarioInsights"},s)});
+//# sourceMappingURL=ScenarioInsightsList.js.map

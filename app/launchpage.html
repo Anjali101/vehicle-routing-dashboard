@@ -26,6 +26,25 @@
                         url: "./classification/webapp",
                         navigationMode: 'embedded',
           },
+           
+          
+          "insights-display": {
+                        title: 'Insights',
+                        description: 'Route-Insights',
+                        additionalInformation: 'SAPUI5.Component=insights',
+                        applicationType: 'URL',
+                        url: "./insights/webapp",
+                        navigationMode: 'embedded',
+          },
+
+          "characteristics-display": {
+                        title: 'Characteristics',
+                        description: 'Route-Characteristics',
+                        additionalInformation: 'SAPUI5.Component=characteristics',
+                        applicationType: 'URL',
+                        url: "./characteristics/webapp",
+                        navigationMode: 'embedded',
+          }
         },
                     };
             
@@ -40,7 +59,10 @@
             data-sap-ui-bindingSyntax="complex"
             data-sap-ui-resourceroots='{
                 "vrp-test": "./vrp-test/webapp",
-                "classification": "./classification/webapp"
+                "classification": "./classification/webapp",
+                "insights": "./insights/webapp",
+                "characteristics": "./characteristics/webapp"
+                
               }'
         ></script>
         <script>

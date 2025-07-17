@@ -52,7 +52,7 @@ annotate service.characteristics with {
   AvgVolumeUsage @Measures.Unit : '%';        
   MaxCustomerDistanceKM @Measures.Unit : 'km';
   VehicleCapacityKG @Measures.Unit : 'kg'; 
-  avg_customer_spread @Measures.Unit : 'kg';   
+  avg_customer_spread @Measures.Unit : 'km';   
   avg_customer_spread_time @Measures.Unit : 'min';  
   VehicleVolumeM3 @Measures.Unit : 'm³'
 
@@ -315,6 +315,7 @@ annotate service.characteristics with  @UI.FieldGroup#ConstraintStats: { Data: [
   { Value: DeliveryTime, Label: 'Delivery Time ' },
   { Value: ActiveTime, Label: 'Active Time ' },
   { Value: VehicleCost, Label: 'Vehicle Cost ' },
+  { Value: avg_customer_spread, Label: 'Distance between Customers ' },
   
 
 ];
